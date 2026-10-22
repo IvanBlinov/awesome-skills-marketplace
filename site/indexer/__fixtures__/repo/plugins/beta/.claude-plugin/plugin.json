@@ -1,0 +1,10 @@
+{
+  "name": "beta",
+  "version": "0.3.0",
+  "description": "Code quality tools",
+  "author": { "name": "Beta Team" },
+  "license": "MIT",
+  "agents": ["./custom/only.md"],
+  "skills": "./extra-skills",
+  "mcpServers": { "lint-api": { "type": "http", "url": "https://lint.example.com/mcp" } }
+}

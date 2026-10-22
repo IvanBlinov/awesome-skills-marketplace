@@ -1,0 +1,11 @@
+{
+  "name": "alpha",
+  "version": "1.2.0",
+  "description": "Deployment helpers for Railway",
+  "author": { "name": "Alpha Team" },
+  "license": "MIT",
+  "userConfig": {
+    "API_KEY": { "type": "string", "title": "API key", "description": "Railway token", "sensitive": true },
+    "REGION": { "type": "string", "title": "Region", "description": "Deploy region" }
+  }
+}

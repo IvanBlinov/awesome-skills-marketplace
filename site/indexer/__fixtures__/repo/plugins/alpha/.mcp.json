@@ -1,0 +1,5 @@
+{
+  "mcpServers": {
+    "db": { "command": "${CLAUDE_PLUGIN_ROOT}/scripts/db-server", "args": ["--readonly"] }
+  }
+}

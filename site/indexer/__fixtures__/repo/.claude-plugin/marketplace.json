@@ -1,0 +1,10 @@
+{
+  "name": "awesome-skills-marketplace",
+  "description": "Fixture marketplace",
+  "owner": { "name": "Fixture" },
+  "plugins": [
+    { "name": "alpha", "source": "./plugins/alpha", "description": "Deployment helpers", "category": "devops", "tags": ["deploy", "railway"] },
+    { "name": "beta", "source": "./plugins/beta", "description": "Code quality tools", "category": "quality", "tags": ["lint"] },
+    { "name": "gamma", "source": "./plugins/gamma", "description": "Note taking without a manifest", "category": "productivity", "tags": ["notes"] }
+  ]
+}
