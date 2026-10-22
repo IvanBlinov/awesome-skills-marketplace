@@ -1,0 +1,33 @@
+name: Skill request
+description: Ask for a skill, agent, command, hook, MCP server or plugin that the marketplace does not have yet
+title: "Skill request: "
+labels: ["skill-request"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What do you need?
+      description: Describe the task the skill should help with.
+    validations:
+      required: true
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Use case
+      description: When and why would you use it?
+  - type: textarea
+    id: example-prompt
+    attributes:
+      label: Example prompt
+      description: What would you type to Claude when you need it?
+  - type: dropdown
+    id: type
+    attributes:
+      label: Artifact type
+      options:
+        - skill
+        - agent
+        - command
+        - hook
+        - mcp
+        - plugin

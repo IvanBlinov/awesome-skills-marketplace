@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "awesome-skills-marketplace",
+  "description": "Curated Claude Code plugins, skills, agents and hooks, with a searchable catalog at https://ivanblinov.github.io/awesome-skills-marketplace/",
+  "owner": {
+    "name": "Ivan Blinov",
+    "url": "https://github.com/IvanBlinov"
+  },
+  "plugins": [
+    {
+      "name": "marketplace-tools",
+      "source": "./plugins/marketplace-tools",
+      "description": "Find skills, agents and plugins in this marketplace from inside Claude Code",
+      "category": "meta",
+      "tags": ["search", "catalog", "discovery"]
+    }
+  ]
+}

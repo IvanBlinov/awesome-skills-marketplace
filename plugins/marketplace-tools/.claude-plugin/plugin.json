@@ -1,0 +1,13 @@
+{
+  "name": "marketplace-tools",
+  "version": "0.1.0",
+  "description": "Find skills, agents and plugins in awesome-skills-marketplace from inside Claude Code",
+  "author": {
+    "name": "Ivan Blinov",
+    "url": "https://github.com/IvanBlinov"
+  },
+  "homepage": "https://ivanblinov.github.io/awesome-skills-marketplace/",
+  "repository": "https://github.com/IvanBlinov/awesome-skills-marketplace",
+  "license": "MIT",
+  "keywords": ["search", "catalog", "discovery"]
+}
