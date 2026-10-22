@@ -78,6 +78,15 @@ describe("resolvePlugin uninspected MCP", () => {
 });
 
 describe("resolvePlugin path containment", () => {
+  it("accepts a repo that lives under a symlinked directory", async () => {
+    const { mkdtempSync, cpSync } = await import("node:fs");
+    const os = await import("node:os");
+    const repo = path.join(mkdtempSync(path.join(os.tmpdir(), "mp-")), "repo"); // macOS: /var -> /private/var
+    cpSync(ROOT, repo, { recursive: true });
+    const p = await resolvePlugin(repo, { name: "gamma", source: "./plugins/gamma" });
+    expect(p.skillFiles).toEqual(["plugins/gamma/skills/notes/SKILL.md"]);
+  });
+
   it("rejects a source outside the repo", async () => {
     await expect(resolvePlugin(ROOT, { name: "evil", source: "./../../.." })).rejects.toThrow(/outside/);
   });
@@ -97,6 +106,8 @@ describe("resolvePlugin path containment", () => {
     writeFileSync(path.join(tmp, "secret.md"), "---\nname: secret\n---\nTOP SECRET");
     mkdirSync(path.join(repo, "plugins/gamma/agents"), { recursive: true });
     symlinkSync(path.join(tmp, "secret.md"), path.join(repo, "plugins/gamma/agents/leak.md"));
-    await expect(resolvePlugin(repo, { name: "gamma", source: "./plugins/gamma" })).rejects.toThrow(/outside/);
+    await expect(resolvePlugin(repo, { name: "gamma", source: "./plugins/gamma" })).rejects.toThrow(
+      /file plugins\/gamma\/agents\/leak\.md resolves outside/,
+    );
   });
 });

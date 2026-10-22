@@ -59,8 +59,9 @@ function assertInside(abs: string, base: string, what: string): void {
     const rel = path.relative(b, a);
     return rel === "" || (!rel.startsWith("..") && !path.isAbsolute(rel));
   };
-  const real = (p: string) => (existsSync(p) ? realpathSync(p) : p);
-  if (!within(abs, base) || !within(real(abs), real(base))) {
+  // A path that does not exist cannot be read, so only the lexical check applies to it.
+  const escapesViaSymlink = existsSync(abs) && existsSync(base) && !within(realpathSync(abs), realpathSync(base));
+  if (!within(abs, base) || escapesViaSymlink) {
     throw new Error(`${what} resolves outside ${base}`);
   }
 }
