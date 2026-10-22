@@ -54,12 +54,16 @@ export interface HookHandler {
   type: string;
   command?: string;
   args?: string[];
+  url?: string;
+  prompt?: string;
   [key: string]: unknown;
 }
 
 export interface HookMatcher {
   matcher?: string;
   hooks: HookHandler[];
+  /** Repo-relative file the matcher was declared in (set by the indexer). */
+  source?: string;
 }
 
 export type HooksConfig = Record<string, HookMatcher[]>;

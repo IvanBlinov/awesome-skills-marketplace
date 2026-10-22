@@ -35,6 +35,29 @@ describe("checkConventions", () => {
     expect(await checkConventions(repo)).toContain('plugin "Gamma;x": name must be kebab-case (a-z, 0-9, "-")');
   });
 
+  it("rejects command files and mcp server names that are not url-safe", async () => {
+    const { mkdtempSync, cpSync, writeFileSync } = await import("node:fs");
+    const os = await import("node:os");
+    const repo = mkdtempSync(path.join(os.tmpdir(), "mp-"));
+    cpSync(path.join(__dirname, "__fixtures__/repo"), repo, { recursive: true });
+    writeFileSync(path.join(repo, "plugins/alpha/commands/what?.md"), "---\ndescription: Asks things.\n---\n");
+    writeFileSync(path.join(repo, "plugins/alpha/.mcp.json"), JSON.stringify({ mcpServers: { "my server#1": { command: "x" } } }));
+    const errors = await checkConventions(repo);
+    expect(errors).toContain('plugins/alpha/commands/what?.md: name "what?" must use only A-Z, a-z, 0-9, ".", "_", "-"');
+    expect(errors).toContain('plugin "alpha": MCP server "my server#1" must use only A-Z, a-z, 0-9, ".", "_", "-"');
+  });
+
+  it("rejects a marketplace entry without a name", async () => {
+    const { mkdtempSync, cpSync, readFileSync, writeFileSync } = await import("node:fs");
+    const os = await import("node:os");
+    const repo = mkdtempSync(path.join(os.tmpdir(), "mp-"));
+    cpSync(path.join(__dirname, "__fixtures__/repo"), repo, { recursive: true });
+    const file = path.join(repo, ".claude-plugin/marketplace.json");
+    const mp = JSON.parse(readFileSync(file, "utf8"));
+    writeFileSync(file, JSON.stringify({ ...mp, plugins: [...mp.plugins, { source: "./plugins/gamma", category: "meta", tags: ["x"] }] }));
+    expect(await checkConventions(repo)).toContain("a marketplace entry has no name");
+  });
+
   it("reports unreadable marketplace", async () => {
     const errors = await checkConventions("/nonexistent");
     expect(errors[0]).toMatch(/marketplace\.json/);

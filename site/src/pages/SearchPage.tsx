@@ -49,6 +49,15 @@ export function SearchPage({ catalog, onAddToBundle, isInBundle }: Props) {
 
   useEffect(() => () => window.clearTimeout(timer.current), []);
 
+  // Follow URL changes made outside this page (nav links, back/forward), but not our own writes.
+  useEffect(() => {
+    setState((current) => {
+      if (writeSearchState(current) === location.search) return current;
+      window.clearTimeout(timer.current);
+      return readSearchState(location.search);
+    });
+  }, [location.search]);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;

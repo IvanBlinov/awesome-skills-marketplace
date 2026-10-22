@@ -72,7 +72,9 @@ function BodyView({ body, a }: { body: Body; a: Artifact }) {
       </p>
     );
   }
-  return <Markdown source={body.text} />;
+  // Plugins point at their directory; file-based artifacts at the file's directory.
+  const basePath = a.type === "plugin" ? a.path : a.path.split("/").slice(0, -1).join("/");
+  return <Markdown source={body.text} basePath={basePath} />;
 }
 
 export function ArtifactPage({ catalog, onAddToBundle, isInBundle }: Props) {

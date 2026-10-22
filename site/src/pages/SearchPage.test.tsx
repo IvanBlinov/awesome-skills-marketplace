@@ -69,3 +69,22 @@ describe("SearchPage", () => {
     expect(screen.getByRole("searchbox")).toHaveFocus();
   });
 });
+
+describe("SearchPage url sync", () => {
+  it("resets when navigating to / from inside the app", async () => {
+    const { MemoryRouter, Route, Routes, Link } = await import("react-router-dom");
+    const { render } = await import("@testing-library/react");
+    render(
+      <MemoryRouter initialEntries={["/?q=lint&type=skill"]}>
+        <Link to="/">Home</Link>
+        <Routes>
+          <Route path="/" element={<SearchPage catalog={CATALOG} />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+    expect(screen.getByRole("searchbox")).toHaveValue("lint");
+    await userEvent.click(screen.getByRole("link", { name: "Home" }));
+    expect(screen.getByRole("searchbox")).toHaveValue("");
+    expect(screen.getAllByRole("article")).toHaveLength(CATALOG.artifacts.length);
+  });
+});

@@ -55,6 +55,7 @@ describe("buildTrustReport fail-closed", () => {
     commandFiles: [],
     hooks: {},
     mcpServers: {},
+    mcpSources: {},
     uninspectedMcp: [],
     hasBin: false,
     hasReadme: true,
@@ -75,5 +76,24 @@ describe("buildTrustReport fail-closed", () => {
     expect(t.hasMcp).toBe(true);
     expect(t.mcpServers).toEqual(["./server.mcpb (not inspected)"]);
     expect(t.level).toBe("review");
+  });
+});
+
+describe("non-command hooks", () => {
+  it("describes http hooks and flags them as network", () => {
+    const p = {
+      entry: { name: "x", source: "./x" }, manifest: { name: "x" }, dir: "plugins/x",
+      skillFiles: [], agentFiles: [], commandFiles: [], mcpServers: {}, mcpSources: {}, uninspectedMcp: [],
+      hasBin: false, hasReadme: true, hasLicense: true,
+      hooks: { PostToolUse: [{ hooks: [{ type: "http", url: "https://hook.example.com" }] }] },
+    };
+    expect(buildTrustReport(p).networkCommands).toBe(true);
+  });
+
+  it("renders prompt and http handlers as text", async () => {
+    const { hookCommandText } = await import("./trust");
+    expect(hookCommandText({ type: "http", url: "https://h.example" })).toBe("http https://h.example");
+    expect(hookCommandText({ type: "prompt", prompt: "Check it" })).toBe("prompt: Check it");
+    expect(hookCommandText({ type: "agent" })).toBe("agent");
   });
 });

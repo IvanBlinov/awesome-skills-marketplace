@@ -26,3 +26,24 @@ describe("Markdown", () => {
     expect(links.find((a) => a.textContent === "mail")).toHaveAttribute("href", "mailto:a@b.c");
   });
 });
+
+describe("Markdown relative urls", () => {
+  it("points relative links and images at GitHub and keeps anchors", () => {
+    const { container } = render(
+      <Markdown source={"[doc](./docs/x.md) [up](../README.md) [top](#top) ![i](img.png)"} basePath="plugins/alpha/skills/deploy" />,
+    );
+    const href = (text: string) => [...container.querySelectorAll("a")].find((a) => a.textContent === text)?.getAttribute("href");
+    expect(href("doc")).toBe("https://github.com/IvanBlinov/awesome-skills-marketplace/blob/main/plugins/alpha/skills/deploy/docs/x.md");
+    expect(href("up")).toBe("https://github.com/IvanBlinov/awesome-skills-marketplace/blob/main/plugins/alpha/skills/README.md");
+    expect(href("top")).toBe("#top");
+    expect(container.querySelector("img")?.getAttribute("src")).toBe(
+      "https://raw.githubusercontent.com/IvanBlinov/awesome-skills-marketplace/main/plugins/alpha/skills/deploy/img.png",
+    );
+  });
+
+  it("renders disallowed links as plain text", () => {
+    const { container } = render(<Markdown source={"[bad](javascript:alert(1))"} />);
+    expect(container.querySelector("a")).toBeNull();
+    expect(container.textContent).toContain("bad");
+  });
+});

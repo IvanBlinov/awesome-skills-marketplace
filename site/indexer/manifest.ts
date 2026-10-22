@@ -21,6 +21,8 @@ export interface ResolvedPlugin {
   commandFiles: string[];
   hooks: Record<string, HookMatcher[]>;
   mcpServers: Record<string, McpServerConfig>;
+  /** Repo-relative file each MCP server is declared in. */
+  mcpSources: Record<string, string>;
   /** MCP sources that were declared but not parsed (.mcpb bundles, URLs). */
   uninspectedMcp: string[];
   hasBin: boolean;
@@ -117,32 +119,63 @@ function mergeHooks(a: HooksConfig, b: HooksConfig): HooksConfig {
   );
 }
 
-async function loadHooks(pluginAbs: string, manifest: PluginManifest): Promise<HooksConfig> {
+/** Where a hook/MCP declaration lives: a repo-relative file, or the manifest for inline ones. */
+interface SourceContext {
+  pluginAbs: string;
+  root: string;
+  inlineFile: string;
+}
+
+const relTo = (root: string, abs: string) => toPosix(path.relative(root, abs));
+
+async function loadHooks(ctx: SourceContext, manifest: PluginManifest): Promise<HooksConfig> {
+  const { pluginAbs, root, inlineFile } = ctx;
   const defaultFile = path.join(pluginAbs, "hooks/hooks.json");
   const sources = [...(existsSync(defaultFile) ? ["./hooks/hooks.json"] : []), ...asArray(manifest.hooks)];
   const configs = await Promise.all(
     sources.map(async (src) => {
       if (typeof src === "string") assertInside(path.join(pluginAbs, src), pluginAbs, `path "${src}"`);
       const raw = typeof src === "string" ? await readJson<Record<string, unknown>>(path.join(pluginAbs, src)) : src;
-      return ((raw as { hooks?: HooksConfig }).hooks ?? raw) as HooksConfig;
+      const file = typeof src === "string" ? relTo(root, path.join(pluginAbs, src)) : inlineFile;
+      const config = ((raw as { hooks?: HooksConfig }).hooks ?? raw) as HooksConfig;
+      return Object.fromEntries(
+        Object.entries(config).map(([event, matchers]) => [event, matchers.map((m) => ({ ...m, source: file }))]),
+      ) as HooksConfig;
     }),
   );
   return configs.reduce(mergeHooks, {});
 }
 
-async function loadMcp(pluginAbs: string, manifest: PluginManifest): Promise<Record<string, McpServerConfig>> {
+interface LoadedMcp {
+  servers: Record<string, McpServerConfig>;
+  /** Repo-relative file each server is declared in. */
+  sources: Record<string, string>;
+}
+
+async function loadMcp(ctx: SourceContext, manifest: PluginManifest): Promise<LoadedMcp> {
+  const { pluginAbs, root, inlineFile } = ctx;
   const defaultFile = path.join(pluginAbs, ".mcp.json");
   const sources = [...(existsSync(defaultFile) ? ["./.mcp.json"] : []), ...asArray(manifest.mcpServers)];
   const maps = await Promise.all(
-    sources.map(async (src) => {
-      if (typeof src !== "string") return src;
-      if (!src.endsWith(".json")) return {}; // reported via uninspectedMcp
+    sources.map(async (src): Promise<[Record<string, McpServerConfig>, string]> => {
+      if (typeof src !== "string") return [src, inlineFile];
+      if (!src.endsWith(".json")) return [{}, inlineFile]; // reported via uninspectedMcp
       assertInside(path.join(pluginAbs, src), pluginAbs, `path "${src}"`);
       const raw = await readJson<Record<string, unknown>>(path.join(pluginAbs, src));
-      return ((raw as { mcpServers?: Record<string, McpServerConfig> }).mcpServers ?? raw) as Record<string, McpServerConfig>;
+      const servers = ((raw as { mcpServers?: Record<string, McpServerConfig> }).mcpServers ?? raw) as Record<
+        string,
+        McpServerConfig
+      >;
+      return [servers, relTo(root, path.join(pluginAbs, src))];
     }),
   );
-  return maps.reduce((acc, m) => ({ ...acc, ...m }), {});
+  return maps.reduce<LoadedMcp>(
+    (acc, [servers, file]) => ({
+      servers: { ...acc.servers, ...servers },
+      sources: { ...acc.sources, ...Object.fromEntries(Object.keys(servers).map((k) => [k, file])) },
+    }),
+    { servers: {}, sources: {} },
+  );
 }
 
 export async function resolvePlugin(root: string, entry: MarketplaceEntry): Promise<ResolvedPlugin> {
@@ -167,6 +200,12 @@ export async function resolvePlugin(root: string, entry: MarketplaceEntry): Prom
     assertInside(abs, root, `file ${toPosix(path.relative(root, abs))}`);
     return toPosix(path.relative(root, abs));
   };
+  const ctx: SourceContext = {
+    pluginAbs,
+    root,
+    inlineFile: own ? relTo(root, manifestFile) : ".claude-plugin/marketplace.json",
+  };
+  const mcp = await loadMcp(ctx, manifest);
   const readme = path.join(pluginAbs, "README.md");
   if (existsSync(readme)) assertInside(readme, root, `file ${rel(pluginAbs)}/README.md`);
   const relSorted = (files: string[]) => [...new Set(files.map(rel))].sort();
@@ -178,8 +217,9 @@ export async function resolvePlugin(root: string, entry: MarketplaceEntry): Prom
     skillFiles: relSorted(await skillFiles(pluginAbs, skillSpecs)),
     agentFiles: relSorted(await markdownFiles(pluginAbs, agentSpecs)),
     commandFiles: relSorted(await markdownFiles(pluginAbs, commandSpecs)),
-    hooks: await loadHooks(pluginAbs, manifest),
-    mcpServers: await loadMcp(pluginAbs, manifest),
+    hooks: await loadHooks(ctx, manifest),
+    mcpServers: mcp.servers,
+    mcpSources: mcp.sources,
     uninspectedMcp: asArray(manifest.mcpServers).filter(
       (src): src is string => typeof src === "string" && !src.endsWith(".json"),
     ),

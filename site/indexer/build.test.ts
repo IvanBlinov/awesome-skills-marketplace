@@ -95,6 +95,15 @@ describe("buildCatalog", () => {
     });
   });
 
+  it("points hook and mcp cards at the file that declares them", async () => {
+    const { catalog } = await build();
+    const get = (id: string) => catalog.artifacts.find((a) => a.id === id)!;
+    expect(get("alpha/hook/PreToolUse-1").path).toBe("plugins/alpha/hooks/hooks.json");
+    expect(get("alpha/hook/PreToolUse-1").sourceUrl).toMatch(/\/blob\/main\/plugins\/alpha\/hooks\/hooks\.json$/);
+    expect(get("alpha/mcp/db").path).toBe("plugins/alpha/.mcp.json");
+    expect(get("beta/mcp/lint-api").path).toBe("plugins/beta/.claude-plugin/plugin.json");
+  });
+
   it("does not index agents replaced by plugin.json", async () => {
     const { catalog } = await build();
     expect(catalog.artifacts.some((a) => a.name === "ignored")).toBe(false);

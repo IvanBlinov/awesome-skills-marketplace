@@ -1,4 +1,3 @@
-import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { ADD_COMMAND, MARKETPLACE_NAME, REPO, SOURCE_BASE_URL } from "../src/config";
@@ -79,14 +78,13 @@ async function markdownArtifacts(
 }
 
 function hookArtifacts(p: ResolvedPlugin, common: (relPath: string) => Common): Built[] {
-  const hooksPath = `${p.dir}/hooks/hooks.json`;
   return Object.entries(p.hooks).flatMap(([event, matchers]) =>
     matchers.map((m, i) => {
       const commands = m.hooks.map(hookCommandText).filter(Boolean);
       const name = `${event}-${i + 1}`;
       return {
         artifact: {
-          ...common(existsSync(hooksPath) ? hooksPath : `${p.dir}/.claude-plugin/plugin.json`),
+          ...common(m.source ?? `${p.dir}/.claude-plugin/plugin.json`),
           id: `${p.entry.name}/hook/${name}`,
           type: "hook" as const,
           name,
@@ -105,7 +103,7 @@ function mcpArtifacts(p: ResolvedPlugin, common: (relPath: string) => Common): B
     const mcp = mcpInfo(cfg);
     return {
       artifact: {
-        ...common(`${p.dir}/.mcp.json`),
+        ...common(p.mcpSources[server] ?? `${p.dir}/.claude-plugin/plugin.json`),
         id: `${p.entry.name}/mcp/${server}`,
         type: "mcp" as const,
         name: server,

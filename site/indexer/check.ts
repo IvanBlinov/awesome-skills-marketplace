@@ -6,10 +6,14 @@ import { parseMarkdownArtifact } from "./markdown";
 import type { MarketplaceEntry } from "./types";
 
 const NAME_RE = /^[a-z0-9-]+$/;
+/** Characters allowed in any identifier that ends up in an artifact id / URL. */
+const URL_SAFE_RE = /^[A-Za-z0-9._-]+$/;
+const URL_SAFE_HINT = 'must use only A-Z, a-z, 0-9, ".", "_", "-"';
 const RESERVED_RE = /claude|anthropic/;
 const CATEGORY_IDS = new Set(CATEGORIES.map((c) => c.id));
 
 function entryErrors(e: MarketplaceEntry): string[] {
+  if (typeof e.name !== "string" || e.name === "") return ["a marketplace entry has no name"];
   const tags = e.tags ?? [];
   const tagsOk = tags.length >= 1 && tags.length <= 8 && tags.every((t) => typeof t === "string" && t === t.toLowerCase());
   return [
@@ -17,6 +21,20 @@ function entryErrors(e: MarketplaceEntry): string[] {
     ...(e.category && CATEGORY_IDS.has(e.category) ? [] : [`plugin "${e.name}": unknown category "${e.category ?? ""}"`]),
     ...(tagsOk ? [] : [`plugin "${e.name}": tags must be 1–8 lowercase strings`]),
   ];
+}
+
+function idErrors(p: ResolvedPlugin): string[] {
+  const commandErrors = p.commandFiles
+    .map((f) => [f, path.posix.basename(f, ".md")] as const)
+    .filter(([, name]) => !URL_SAFE_RE.test(name))
+    .map(([f, name]) => `${f}: name "${name}" ${URL_SAFE_HINT}`);
+  const mcpErrors = Object.keys(p.mcpServers)
+    .filter((k) => !URL_SAFE_RE.test(k))
+    .map((k) => `plugin "${p.entry.name}": MCP server "${k}" ${URL_SAFE_HINT}`);
+  const hookErrors = Object.keys(p.hooks)
+    .filter((k) => !URL_SAFE_RE.test(k))
+    .map((k) => `plugin "${p.entry.name}": hook event "${k}" ${URL_SAFE_HINT}`);
+  return [...commandErrors, ...mcpErrors, ...hookErrors];
 }
 
 function pluginFileErrors(root: string, p: ResolvedPlugin): string[] {
@@ -81,6 +99,7 @@ export async function checkConventions(root: string): Promise<string[]> {
     return [
       ...mp.plugins.flatMap(entryErrors),
       ...plugins.flatMap((p) => pluginFileErrors(root, p)),
+      ...plugins.flatMap(idErrors),
       ...named.flatMap((n) => n.errors),
       ...duplicateNameErrors(named),
     ];
