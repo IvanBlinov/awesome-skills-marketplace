@@ -32,3 +32,16 @@ describe("App", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent(/HTTP 500/);
   });
 });
+
+describe("App routes", () => {
+  it("renders the detail page for deep links", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((url: string) =>
+        Promise.resolve(new Response(url.endsWith("catalog.json") ? JSON.stringify(CATALOG) : "# Body")),
+      ),
+    );
+    renderApp("/a/gamma/skill/notes");
+    expect(await screen.findByRole("heading", { level: 1, name: "notes" })).toBeInTheDocument();
+  });
+});

@@ -1,6 +1,7 @@
 import { Link, Route, Routes } from "react-router-dom";
 import { useCatalog } from "./catalog/useCatalog";
 import { SITE_URL } from "./config";
+import { ArtifactPage } from "./pages/ArtifactPage";
 import { SearchPage } from "./pages/SearchPage";
 import { skillRequestUrl } from "./request/issueUrl";
 
@@ -28,6 +29,7 @@ export function AppRoutes() {
         {state.status === "ready" && state.catalog && (
           <Routes>
             <Route path="/" element={<SearchPage catalog={state.catalog} />} />
+            <Route path="/a/*" element={<ArtifactPage catalog={state.catalog} />} />
           </Routes>
         )}
       </main>
