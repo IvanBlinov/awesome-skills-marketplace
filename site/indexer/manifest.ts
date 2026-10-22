@@ -21,6 +21,8 @@ export interface ResolvedPlugin {
   commandFiles: string[];
   hooks: Record<string, HookMatcher[]>;
   mcpServers: Record<string, McpServerConfig>;
+  /** MCP sources that were declared but not parsed (.mcpb bundles, URLs). */
+  uninspectedMcp: string[];
   hasBin: boolean;
   hasReadme: boolean;
   hasLicense: boolean;
@@ -118,7 +120,7 @@ async function loadMcp(pluginAbs: string, manifest: PluginManifest): Promise<Rec
   const maps = await Promise.all(
     sources.map(async (src) => {
       if (typeof src !== "string") return src;
-      if (!src.endsWith(".json")) return {}; // .mcpb bundles and URLs are not inspected
+      if (!src.endsWith(".json")) return {}; // reported via uninspectedMcp
       const raw = await readJson<Record<string, unknown>>(path.join(pluginAbs, src));
       return ((raw as { mcpServers?: Record<string, McpServerConfig> }).mcpServers ?? raw) as Record<string, McpServerConfig>;
     }),
@@ -155,6 +157,9 @@ export async function resolvePlugin(root: string, entry: MarketplaceEntry): Prom
     commandFiles: relSorted(await markdownFiles(pluginAbs, commandSpecs)),
     hooks: await loadHooks(pluginAbs, manifest),
     mcpServers: await loadMcp(pluginAbs, manifest),
+    uninspectedMcp: asArray(manifest.mcpServers).filter(
+      (src): src is string => typeof src === "string" && !src.endsWith(".json"),
+    ),
     hasBin: isDir(path.join(pluginAbs, "bin")),
     hasReadme: existsSync(path.join(pluginAbs, "README.md")),
     hasLicense: ["LICENSE", "LICENSE.md", "LICENSE.txt"].some((f) => existsSync(path.join(pluginAbs, f))),

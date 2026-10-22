@@ -44,3 +44,36 @@ describe("NETWORK_COMMAND_RE", () => {
     expect(NETWORK_COMMAND_RE.test("echo curlew")).toBe(false);
   });
 });
+
+describe("buildTrustReport fail-closed", () => {
+  const base = {
+    entry: { name: "x", source: "./x" },
+    manifest: { name: "x" },
+    dir: "plugins/x",
+    skillFiles: [],
+    agentFiles: [],
+    commandFiles: [],
+    hooks: {},
+    mcpServers: {},
+    uninspectedMcp: [],
+    hasBin: false,
+    hasReadme: true,
+    hasLicense: true,
+  };
+
+  it("rates a local stdio MCP server as review", () => {
+    const t = buildTrustReport({ ...base, mcpServers: { local: { command: "node", args: ["s.js"] } } });
+    expect(t.level).toBe("review");
+  });
+
+  it("keeps remote http MCP servers low", () => {
+    expect(buildTrustReport({ ...base, mcpServers: { r: { type: "http", url: "https://x" } } }).level).toBe("low");
+  });
+
+  it("treats uninspected MCP sources as present and review", () => {
+    const t = buildTrustReport({ ...base, uninspectedMcp: ["./server.mcpb"] });
+    expect(t.hasMcp).toBe(true);
+    expect(t.mcpServers).toEqual(["./server.mcpb (not inspected)"]);
+    expect(t.level).toBe("review");
+  });
+});

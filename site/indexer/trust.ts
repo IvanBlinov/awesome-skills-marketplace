@@ -11,7 +11,13 @@ export function hookCommandText(h: HookHandler): string {
 
 export function buildTrustReport(p: ResolvedPlugin): TrustReport {
   const hookEvents = Object.keys(p.hooks).sort();
-  const mcpServers = Object.keys(p.mcpServers).sort();
+  const mcpServers = [
+    ...Object.keys(p.mcpServers).sort(),
+    ...p.uninspectedMcp.map((src) => `${src} (not inspected)`),
+  ];
+  // A stdio server runs a local process, and an uninspected source could; both need review.
+  const runsLocalCode =
+    Object.values(p.mcpServers).some((s) => typeof s.command === "string") || p.uninspectedMcp.length > 0;
   const userConfig = Object.entries(p.manifest.userConfig ?? {});
   const commands = Object.values(p.hooks).flatMap((ms) => ms.flatMap((m) => m.hooks.map(hookCommandText)));
 
@@ -20,7 +26,7 @@ export function buildTrustReport(p: ResolvedPlugin): TrustReport {
   const requiresSecrets = userConfig.filter(([, o]) => o.sensitive).map(([k]) => k).sort();
   const requiresConfig = userConfig.filter(([, o]) => !o.sensitive).map(([k]) => k).sort();
   const level: TrustReport["level"] =
-    hasHooks || p.hasBin ? "review" : hasMcp || userConfig.length > 0 ? "low" : "none";
+    hasHooks || p.hasBin || runsLocalCode ? "review" : hasMcp || userConfig.length > 0 ? "low" : "none";
 
   return {
     hasHooks,

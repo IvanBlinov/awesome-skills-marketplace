@@ -65,3 +65,14 @@ describe("resolvePlugin", () => {
     expect(p.hooks).toEqual({});
   });
 });
+
+describe("resolvePlugin uninspected MCP", () => {
+  it("records non-json MCP sources instead of dropping them", async () => {
+    const p = await resolvePlugin(ROOT, {
+      name: "gamma",
+      source: "./plugins/gamma",
+      mcpServers: ["./server.mcpb", "https://example.com/bundle.mcpb"],
+    });
+    expect(p.uninspectedMcp).toEqual(["./server.mcpb", "https://example.com/bundle.mcpb"]);
+  });
+});
