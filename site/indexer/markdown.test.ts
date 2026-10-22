@@ -56,3 +56,12 @@ describe("estimateTokens", () => {
     expect(estimateTokens("")).toBe(0);
   });
 });
+
+describe("parseMarkdownArtifact security", () => {
+  it("rejects executable js frontmatter without running it", async () => {
+    const g = globalThis as { __pwned?: boolean };
+    const file = tmpFile("---js\n{ name: (globalThis.__pwned = true, 'x') }\n---\nBody");
+    await expect(parseMarkdownArtifact(file)).rejects.toThrow(/frontmatter/);
+    expect(g.__pwned).toBeUndefined();
+  });
+});

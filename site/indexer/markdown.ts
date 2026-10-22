@@ -35,7 +35,11 @@ export async function parseMarkdownArtifact(absPath: string): Promise<MarkdownAr
   const raw = await readFile(absPath, "utf8");
   let parsed: matter.GrayMatterFile<string>;
   try {
-    parsed = matter(raw);
+    // Frontmatter is untrusted (comes from PRs): only YAML, never the js/coffee engines that eval.
+    const refuse = () => {
+      throw new Error("only YAML frontmatter is allowed");
+    };
+    parsed = matter(raw, { language: "yaml", engines: { js: refuse, javascript: refuse, coffee: refuse } });
   } catch (e) {
     throw new Error(`${absPath}: invalid frontmatter (${(e as Error).message})`);
   }
