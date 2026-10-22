@@ -1,3 +1,10 @@
 node_modules/
 .superpowers/
 .DS_Store
+site/dist/
+site/coverage/
+site/public/catalog.json
+site/public/content/
+site/public/llms.txt
+site/test-results/
+site/playwright-report/
