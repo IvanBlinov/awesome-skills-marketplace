@@ -1,4 +1,4 @@
-import { existsSync, statSync } from "node:fs";
+import { existsSync, realpathSync, statSync } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import type {
@@ -52,6 +52,18 @@ export async function loadMarketplace(root: string): Promise<MarketplaceFile> {
 }
 
 const toPosix = (p: string) => p.split(path.sep).join("/");
+
+/** Throws unless `abs` is `base` or inside it (lexically, and after following symlinks if it exists). */
+function assertInside(abs: string, base: string, what: string): void {
+  const within = (a: string, b: string) => {
+    const rel = path.relative(b, a);
+    return rel === "" || (!rel.startsWith("..") && !path.isAbsolute(rel));
+  };
+  const real = (p: string) => (existsSync(p) ? realpathSync(p) : p);
+  if (!within(abs, base) || !within(real(abs), real(base))) {
+    throw new Error(`${what} resolves outside ${base}`);
+  }
+}
 const asArray = <T>(v: T | T[] | undefined): T[] => (v === undefined ? [] : Array.isArray(v) ? v : [v]);
 const isDir = (p: string) => existsSync(p) && statSync(p).isDirectory();
 
@@ -73,7 +85,8 @@ async function markdownFiles(pluginAbs: string, specs: string[]): Promise<string
   const lists = await Promise.all(
     specs.map((spec) => {
       const abs = path.join(pluginAbs, spec);
-      return isDir(abs) ? walkMarkdown(abs) : Promise.resolve(existsSync(abs) ? [abs] : []);
+      assertInside(abs, pluginAbs, `path "${spec}"`);
+      return isDir(abs) ? walkMarkdown(abs) : Promise.resolve(existsSync(abs) && abs.endsWith(".md") ? [abs] : []);
     }),
   );
   return lists.flat();
@@ -84,6 +97,7 @@ async function skillFiles(pluginAbs: string, specs: string[]): Promise<string[]>
   const lists = await Promise.all(
     specs.map(async (spec) => {
       const abs = path.join(pluginAbs, spec);
+      assertInside(abs, pluginAbs, `path "${spec}"`);
       if (existsSync(path.join(abs, "SKILL.md"))) return [path.join(abs, "SKILL.md")];
       if (!isDir(abs)) return [];
       const entries = await readdir(abs, { withFileTypes: true });
@@ -107,6 +121,7 @@ async function loadHooks(pluginAbs: string, manifest: PluginManifest): Promise<H
   const sources = [...(existsSync(defaultFile) ? ["./hooks/hooks.json"] : []), ...asArray(manifest.hooks)];
   const configs = await Promise.all(
     sources.map(async (src) => {
+      if (typeof src === "string") assertInside(path.join(pluginAbs, src), pluginAbs, `path "${src}"`);
       const raw = typeof src === "string" ? await readJson<Record<string, unknown>>(path.join(pluginAbs, src)) : src;
       return ((raw as { hooks?: HooksConfig }).hooks ?? raw) as HooksConfig;
     }),
@@ -121,6 +136,7 @@ async function loadMcp(pluginAbs: string, manifest: PluginManifest): Promise<Rec
     sources.map(async (src) => {
       if (typeof src !== "string") return src;
       if (!src.endsWith(".json")) return {}; // reported via uninspectedMcp
+      assertInside(path.join(pluginAbs, src), pluginAbs, `path "${src}"`);
       const raw = await readJson<Record<string, unknown>>(path.join(pluginAbs, src));
       return ((raw as { mcpServers?: Record<string, McpServerConfig> }).mcpServers ?? raw) as Record<string, McpServerConfig>;
     }),
@@ -133,6 +149,7 @@ export async function resolvePlugin(root: string, entry: MarketplaceEntry): Prom
     throw new Error(`plugin "${entry.name}": only relative-path sources are indexed`);
   }
   const pluginAbs = path.resolve(root, entry.source);
+  assertInside(pluginAbs, root, `plugin "${entry.name}" source`);
   const manifestFile = path.join(pluginAbs, ".claude-plugin/plugin.json");
   const own = existsSync(manifestFile) ? await readJson<PluginManifest>(manifestFile) : undefined;
   const manifest: PluginManifest = { ...(entry as PluginManifest), ...(own ?? {}) };
@@ -145,7 +162,12 @@ export async function resolvePlugin(root: string, entry: MarketplaceEntry): Prom
       ? asArray(manifest.commands)
       : ["./commands"];
 
-  const rel = (abs: string) => toPosix(path.relative(root, abs));
+  const rel = (abs: string) => {
+    assertInside(abs, root, `file ${toPosix(path.relative(root, abs))}`);
+    return toPosix(path.relative(root, abs));
+  };
+  const readme = path.join(pluginAbs, "README.md");
+  if (existsSync(readme)) assertInside(readme, root, `file ${rel(pluginAbs)}/README.md`);
   const relSorted = (files: string[]) => [...new Set(files.map(rel))].sort();
 
   return {

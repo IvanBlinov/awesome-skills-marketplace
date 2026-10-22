@@ -76,3 +76,27 @@ describe("resolvePlugin uninspected MCP", () => {
     expect(p.uninspectedMcp).toEqual(["./server.mcpb", "https://example.com/bundle.mcpb"]);
   });
 });
+
+describe("resolvePlugin path containment", () => {
+  it("rejects a source outside the repo", async () => {
+    await expect(resolvePlugin(ROOT, { name: "evil", source: "./../../.." })).rejects.toThrow(/outside/);
+  });
+
+  it("rejects component paths that leave the plugin dir", async () => {
+    await expect(
+      resolvePlugin(ROOT, { name: "gamma", source: "./plugins/gamma", agents: ["./../alpha/agents/reviewer.md"] }),
+    ).rejects.toThrow(/outside/);
+  });
+
+  it("rejects symlinked files that resolve outside the repo", async () => {
+    const { mkdtempSync, mkdirSync, writeFileSync, symlinkSync, cpSync } = await import("node:fs");
+    const os = await import("node:os");
+    const tmp = mkdtempSync(path.join(os.tmpdir(), "mp-"));
+    const repo = path.join(tmp, "repo");
+    cpSync(ROOT, repo, { recursive: true });
+    writeFileSync(path.join(tmp, "secret.md"), "---\nname: secret\n---\nTOP SECRET");
+    mkdirSync(path.join(repo, "plugins/gamma/agents"), { recursive: true });
+    symlinkSync(path.join(tmp, "secret.md"), path.join(repo, "plugins/gamma/agents/leak.md"));
+    await expect(resolvePlugin(repo, { name: "gamma", source: "./plugins/gamma" })).rejects.toThrow(/outside/);
+  });
+});
