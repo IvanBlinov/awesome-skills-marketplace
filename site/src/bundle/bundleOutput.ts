@@ -1,6 +1,8 @@
 import { MARKETPLACE_NAME, REPO, SITE_URL } from "../config";
 
-const sorted = (plugins: string[]) => [...new Set(plugins)].sort();
+/** Plugin names the indexer accepts; anything else never reaches generated output. */
+const PLUGIN_NAME_RE = /^[a-z0-9][a-z0-9-]*$/;
+const sorted = (plugins: string[]) => [...new Set(plugins)].filter((p) => PLUGIN_NAME_RE.test(p)).sort();
 
 /** `.claude/settings.json` that registers the marketplace and enables the plugins. */
 export function settingsJson(plugins: string[]): string {

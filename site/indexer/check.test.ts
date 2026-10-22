@@ -23,6 +23,18 @@ describe("checkConventions", () => {
     );
   });
 
+  it("rejects plugin names that are not kebab-case", async () => {
+    const { mkdtempSync, cpSync, readFileSync, writeFileSync } = await import("node:fs");
+    const os = await import("node:os");
+    const repo = mkdtempSync(path.join(os.tmpdir(), "mp-"));
+    cpSync(path.join(__dirname, "__fixtures__/repo"), repo, { recursive: true });
+    const file = path.join(repo, ".claude-plugin/marketplace.json");
+    const mp = JSON.parse(readFileSync(file, "utf8"));
+    const renamed = { ...mp, plugins: mp.plugins.map((p: { name: string }) => (p.name === "gamma" ? { ...p, name: "Gamma;x" } : p)) };
+    writeFileSync(file, JSON.stringify(renamed));
+    expect(await checkConventions(repo)).toContain('plugin "Gamma;x": name must be kebab-case (a-z, 0-9, "-")');
+  });
+
   it("reports unreadable marketplace", async () => {
     const errors = await checkConventions("/nonexistent");
     expect(errors[0]).toMatch(/marketplace\.json/);

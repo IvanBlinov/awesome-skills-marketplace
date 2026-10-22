@@ -13,6 +13,7 @@ function entryErrors(e: MarketplaceEntry): string[] {
   const tags = e.tags ?? [];
   const tagsOk = tags.length >= 1 && tags.length <= 8 && tags.every((t) => typeof t === "string" && t === t.toLowerCase());
   return [
+    ...(NAME_RE.test(e.name) ? [] : [`plugin "${e.name}": name must be kebab-case (a-z, 0-9, "-")`]),
     ...(e.category && CATEGORY_IDS.has(e.category) ? [] : [`plugin "${e.name}": unknown category "${e.category ?? ""}"`]),
     ...(tagsOk ? [] : [`plugin "${e.name}": tags must be 1–8 lowercase strings`]),
   ];

@@ -41,3 +41,11 @@ describe("bundleShareUrl", () => {
     );
   });
 });
+
+describe("shellScript safety", () => {
+  it("drops names that are not plain plugin names", () => {
+    const script = shellScript(["ok-plugin", "x; rm -rf ~", "$(whoami)", "a b"]);
+    expect(script).toContain("claude plugin install ok-plugin@awesome-skills-marketplace --scope project");
+    expect(script).not.toMatch(/rm -rf|whoami|a b@/);
+  });
+});
