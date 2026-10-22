@@ -1,0 +1,8 @@
+{
+  "name": "awesome-skills-marketplace",
+  "owner": { "name": "Fixture" },
+  "plugins": [
+    { "name": "one", "source": "./plugins/one", "description": "Plugin one", "category": "devops", "tags": ["x"] },
+    { "name": "two", "source": "./plugins/two", "description": "Plugin two", "category": "not-a-category", "tags": ["y"] }
+  ]
+}
