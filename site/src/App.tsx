@@ -1,12 +1,16 @@
 import { Link, Route, Routes } from "react-router-dom";
+import { useBundle } from "./bundle/useBundle";
 import { useCatalog } from "./catalog/useCatalog";
 import { SITE_URL } from "./config";
 import { ArtifactPage } from "./pages/ArtifactPage";
+import { BundlePage } from "./pages/BundlePage";
 import { SearchPage } from "./pages/SearchPage";
 import { skillRequestUrl } from "./request/issueUrl";
 
 export function AppRoutes() {
   const state = useCatalog();
+  const bundle = useBundle();
+  const bundleProps = { onAddToBundle: bundle.add, isInBundle: bundle.has };
 
   return (
     <div className="app">
@@ -16,6 +20,7 @@ export function AppRoutes() {
         </Link>
         <nav aria-label="Main">
           <Link to="/">Search</Link>
+          <Link to="/bundle">Bundle ({bundle.plugins.length})</Link>
         </nav>
       </header>
 
@@ -28,8 +33,17 @@ export function AppRoutes() {
         )}
         {state.status === "ready" && state.catalog && (
           <Routes>
-            <Route path="/" element={<SearchPage catalog={state.catalog} />} />
-            <Route path="/a/*" element={<ArtifactPage catalog={state.catalog} />} />
+            <Route path="/" element={<SearchPage catalog={state.catalog} {...bundleProps} />} />
+            <Route path="/a/*" element={<ArtifactPage catalog={state.catalog} {...bundleProps} />} />
+            <Route path="/bundle" element={<BundlePage catalog={state.catalog} bundle={bundle} />} />
+            <Route
+              path="*"
+              element={
+                <p>
+                  Page not found. <Link to="/">Back to search</Link>
+                </p>
+              }
+            />
           </Routes>
         )}
       </main>
