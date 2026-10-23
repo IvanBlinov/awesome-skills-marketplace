@@ -39,6 +39,19 @@
         "review",
         "design"
       ]
+    },
+    {
+      "name": "sdd-engineering",
+      "source": "./plugins/sdd-engineering",
+      "description": "Spec Driven Development workflow: spec, plan, implement with TDD, verify against the spec and retro, orchestrated by one command with approval gates",
+      "category": "productivity",
+      "tags": [
+        "sdd",
+        "specs",
+        "planning",
+        "tdd",
+        "workflow"
+      ]
     }
   ]
 }

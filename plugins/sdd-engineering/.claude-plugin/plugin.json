@@ -1,0 +1,43 @@
+{
+  "name": "sdd-engineering",
+  "version": "1.0.0",
+  "description": "Spec Driven Development workflow: spec, plan, implement with TDD, verify against the spec, and run a retro - four agents orchestrated by one command, with approval gates",
+  "author": {
+    "name": "Ivan Blinov",
+    "url": "https://github.com/IvanBlinov"
+  },
+  "homepage": "https://ivanblinov.github.io/awesome-skills-marketplace/",
+  "repository": "https://github.com/IvanBlinov/awesome-skills-marketplace",
+  "license": "MIT",
+  "keywords": ["sdd", "specs", "planning", "tdd", "workflow", "verification"],
+  "dependencies": [
+    { "name": "research-tools", "version": "^1.0.0" },
+    { "name": "architecture-reviewer", "version": "^1.0.0" }
+  ],
+  "userConfig": {
+    "specs_dir": {
+      "type": "directory",
+      "title": "Specs directory",
+      "description": "Where spec-creator writes specs, relative to the project root",
+      "default": "docs/specs"
+    },
+    "plans_dir": {
+      "type": "directory",
+      "title": "Plans directory",
+      "description": "Where implementation-planner writes plans and sdd-run keeps ledgers",
+      "default": "docs/plans"
+    },
+    "verification_dir": {
+      "type": "directory",
+      "title": "Verification reports directory",
+      "description": "Where plan-verifier writes verification reports",
+      "default": "docs/verification"
+    },
+    "retros_dir": {
+      "type": "directory",
+      "title": "Retros directory",
+      "description": "Where workflow-retro writes retrospectives",
+      "default": "docs/retros"
+    }
+  }
+}

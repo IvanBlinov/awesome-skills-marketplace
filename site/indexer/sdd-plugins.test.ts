@@ -163,3 +163,47 @@ describe("architecture-reviewer", () => {
     expect(await n("bmad-code-org/BMAD-METHOD", "skills/bmad-architecture/references/reviewer-gate.md", SHA.bmad)).toBe(true);
   });
 });
+
+describe("sdd-engineering manifest and templates", () => {
+  const T = (f: string) => `plugins/sdd-engineering/templates/${f}`;
+
+  it("depends on the two helper plugins by version range", async () => {
+    expect((await pluginJson("sdd-engineering")).dependencies).toEqual([
+      { name: "research-tools", version: "^1.0.0" },
+      { name: "architecture-reviewer", version: "^1.0.0" },
+    ]);
+  });
+
+  it("declares output directories as userConfig", async () => {
+    const cfg = (await pluginJson("sdd-engineering")).userConfig ?? {};
+    const defaults = Object.fromEntries(Object.entries(cfg).map(([k, v]) => [k, (v as { default?: string }).default]));
+    expect(defaults).toEqual({
+      specs_dir: "docs/specs",
+      plans_dir: "docs/plans",
+      verification_dir: "docs/verification",
+      retros_dir: "docs/retros",
+    });
+    for (const v of Object.values(cfg)) expect(v).toMatchObject({ type: "directory" });
+  });
+
+  it.each([
+    ["spec.md", ["## Intent", "## Goals", "## Non-goals", "## Anti-goals", "## User Stories", "## Functional Requirements", "FR-001", "## Success Criteria", "SC-001", "## Edge Cases", "## Constraints", "## Approaches", "## Decided / Left to the builder", "## Assumptions", "## Clarifications"]],
+    ["plan.md", ["**Goal:**", "**Architecture:**", "**Tech Stack:**", "**Spec:**", "## Global Constraints", "## Review Focus", "## Technical Context", "## Decisions", "## Complexity Tracking", "## File Structure", "### Task 1:", "**Files:**", "**Interfaces:**", "**Covers:**", "[P]"]],
+    ["ledger.md", ["# Ledger — ", "## Steps", "## Tasks", "## Rulings", "## Assumptions", "## Deferred"]],
+    ["verification-report.md", ["## Verdict", "GO", "NO-GO", "## Test Run", "## Coverage", "| Requirement | Tasks | Code | Tests | Status |", "## Findings", "Missing", "Extra", "Misunderstood", "Can't verify", "## Rulings Weighed", "## Metrics"]],
+    ["retro.md", ["slug:", "date:", "mode:", "## Summary", "## Findings", "Source:", "## Previous Retro Follow-through", "## Actions", "## Open Questions", "## Assumptions"]],
+  ])("template %s has its sections", async (file, headings) => {
+    const text = await read(T(file));
+    for (const h of headings) expect(text, h).toContain(h);
+  });
+
+  it("ships the discipline skills with attribution", async () => {
+    for (const skill of ["test-driven-development", "verification-before-completion"]) {
+      const f = `plugins/sdd-engineering/skills/${skill}/SKILL.md`;
+      expect((await readFrontmatter(f)).name).toBe(skill);
+      expect(await noticeLists("sdd-engineering", "obra/superpowers", `skills/${skill}/SKILL.md`, SHA.superpowers)).toBe(true);
+    }
+    expect(existsSync(path.join(REPO, "plugins/sdd-engineering/skills/test-driven-development/writing-good-tests.md"))).toBe(true);
+    expect(await read("plugins/sdd-engineering/skills/test-driven-development/SKILL.md")).not.toMatch(/human partner/);
+  });
+});
