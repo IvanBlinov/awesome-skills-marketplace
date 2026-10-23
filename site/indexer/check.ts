@@ -49,7 +49,13 @@ function pluginFileErrors(root: string, p: ResolvedPlugin): string[] {
     ...(m.author?.name ? [] : [`${p.dir}: plugin.json "author.name" missing`]),
     ...(p.hasReadme ? [] : [`${p.dir}: README.md missing`]),
     ...(p.hasLicense ? [] : [`${p.dir}: LICENSE missing`]),
+    ...(existsSync(path.join(root, p.dir, "CHANGELOG.md")) ? [] : [`${p.dir}: CHANGELOG.md missing`]),
   ];
+}
+
+function hasTools(tools: unknown): boolean {
+  if (typeof tools === "string") return tools.trim() !== "";
+  return Array.isArray(tools) && tools.length > 0;
 }
 
 interface NamedFile {
@@ -71,6 +77,8 @@ async function markdownNameErrors(root: string, rel: string, kind: "skill" | "ag
       errors: [
         ...(nameOk ? [] : [`${rel}: name "${name}" must be ≤ 64 chars of a-z, 0-9, "-" and not contain claude/anthropic`]),
         ...(desc.length >= 20 && desc.length <= 1024 ? [] : [`${rel}: description must be 20–1024 chars (has ${desc.length})`]),
+        // An agent without `tools` inherits every tool, including write access.
+        ...(kind === "agent" && !hasTools(md.frontmatter.tools) ? [`${rel}: tools must be declared`] : []),
       ],
     };
   } catch (e) {

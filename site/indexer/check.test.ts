@@ -11,7 +11,7 @@ describe("checkConventions", () => {
 
   it("reports each broken convention with its path", async () => {
     const errors = await checkConventions(path.join(__dirname, "__fixtures__/bad-repo"));
-    expect(errors).toHaveLength(5);
+    expect(errors).toHaveLength(7);
     expect(errors).toEqual(
       expect.arrayContaining([
         expect.stringMatching(/plugins\/one\/skills\/helper\/SKILL\.md: name "Claude_Helper"/),
@@ -19,6 +19,8 @@ describe("checkConventions", () => {
         expect.stringMatching(/plugin "two": unknown category "not-a-category"/),
         expect.stringMatching(/plugins\/two: LICENSE missing/),
         expect.stringMatching(/plugins\/two\/skills\/dup\/SKILL\.md: skill name "dup" already used/),
+        "plugins/one/agents/notools.md: tools must be declared",
+        "plugins/two: CHANGELOG.md missing",
       ]),
     );
   });

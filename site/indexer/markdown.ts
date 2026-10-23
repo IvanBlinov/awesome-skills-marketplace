@@ -9,6 +9,8 @@ export interface MarkdownArtifact {
   keywords: string[];
   body: string;
   plainText: string;
+  /** All frontmatter fields, for checks that need more than name/description. */
+  frontmatter: Record<string, unknown>;
 }
 
 export function estimateTokens(text: string): number {
@@ -54,5 +56,6 @@ export async function parseMarkdownArtifact(absPath: string): Promise<MarkdownAr
     keywords,
     body: content,
     plainText: stripMarkdown(content).slice(0, MAX_SEARCH_TEXT),
+    frontmatter: { ...data },
   };
 }
