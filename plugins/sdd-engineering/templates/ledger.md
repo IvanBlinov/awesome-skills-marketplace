@@ -3,6 +3,8 @@
 - **Spec:** `<path>`
 - **Plan:** `<path>`
 - **Mode:** interactive | auto
+- **Branch:** <branch name>
+- **Base:** <commit sha the run started from — the verifier diffs Base..HEAD>
 - **Started:** <YYYY-MM-DD>
 
 ## Steps
@@ -18,15 +20,24 @@
 
 ## Tasks
 
-<!-- One line per finished task. sdd-run resumes at the first task without a line. -->
+<!-- Only finished tasks get a line here, with status DONE or DONE_WITH_CONCERNS.
+sdd-run resumes at the first task without one. Fix-pass work is recorded as Fix lines. -->
 
 - Task 1: DONE (commit <sha>, tests: <command> → <result>)
+- Fix <N>: DONE (finding <n>, commit <sha>, tests: <command> → <result>)
+
+## Blocked
+
+<!-- Tasks that returned BLOCKED, with what blocked them. A blocked task has no line under
+## Tasks, so resume retries it once the blocker is cleared. -->
+
+- Task <N> (<YYYY-MM-DD>): <what blocked it, what the implementer tried>
 
 ## Rulings
 
 <!-- Every deviation from the plan, as reported by the implementer or decided by sdd-run. -->
 
-- Task <N>: Ruling: <what was decided> — <why> — <cost if wrong>
+- Ruling (Task <N>): <what was decided> — <why> — <cost if wrong>
 
 ## Assumptions
 

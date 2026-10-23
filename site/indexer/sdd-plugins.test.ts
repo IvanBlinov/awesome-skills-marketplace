@@ -87,7 +87,7 @@ describe("research-tools", () => {
 
   it("researcher has read/search/write tools but cannot dispatch agents", async () => {
     expect((await readFrontmatter(agent)).name).toBe("researcher");
-    expect(await tools(agent)).toEqual(["Glob", "Grep", "Read", "WebFetch", "WebSearch", "Write"]);
+    expect(await tools(agent)).toEqual(["Glob", "Grep", "Read", "Skill", "WebFetch", "WebSearch", "Write"]);
   });
 
   it("researcher follows the research workflow", async () => {
@@ -127,7 +127,7 @@ describe("architecture-reviewer", () => {
 
   it("reviewer is read-only", async () => {
     expect((await readFrontmatter(agent)).name).toBe("architecture-reviewer");
-    expect(await tools(agent)).toEqual(["Bash", "Glob", "Grep", "Read"]);
+    expect(await tools(agent)).toEqual(["Bash", "Glob", "Grep", "Read", "Skill"]);
     expect(await body(agent)).toMatch(/read-only/i);
     expect(await body(agent)).toMatch(/never create or modify files/i);
   });
@@ -214,7 +214,7 @@ describe("sdd-engineering spec and plan agents", () => {
 
   it("spec-creator can research but asks the user nothing directly", async () => {
     expect((await readFrontmatter(A("spec-creator"))).name).toBe("spec-creator");
-    expect(await tools(A("spec-creator"))).toEqual(["Agent", "Glob", "Grep", "Read", "WebFetch", "Write"]);
+    expect(await tools(A("spec-creator"))).toEqual(["Agent", "Glob", "Grep", "Read", "Skill", "WebFetch", "Write"]);
     const b = await body(A("spec-creator"));
     for (const s of ["research-tools:researcher", "research-tools:source-citation", "${CLAUDE_PLUGIN_ROOT}/templates/spec.md", "## Clarifications", "Recommended:", "QUESTIONS:", "STATUS:", "FILE:"]) {
       expect(b, s).toContain(s);
@@ -227,7 +227,7 @@ describe("sdd-engineering spec and plan agents", () => {
 
   it("implementation-planner gets the plan reviewed", async () => {
     expect((await readFrontmatter(A("implementation-planner"))).name).toBe("implementation-planner");
-    expect(await tools(A("implementation-planner"))).toEqual(["Agent", "Glob", "Grep", "Read", "Write"]);
+    expect(await tools(A("implementation-planner"))).toEqual(["Agent", "Glob", "Grep", "Read", "Skill", "Write"]);
     const b = await body(A("implementation-planner"));
     for (const s of ["architecture-reviewer:architecture-reviewer", "${CLAUDE_PLUGIN_ROOT}/templates/plan.md", "extend / new / hybrid", "[P]", "FR-", "Review Focus", "REVIEW:", "STATUS:", "FILE:"]) {
       expect(b, s).toContain(s);
@@ -251,7 +251,7 @@ describe("sdd-engineering implementer and verifier", () => {
 
   it("implementer works alone on one task with the status contract", async () => {
     expect((await readFrontmatter(A("implementer"))).name).toBe("implementer");
-    expect(await tools(A("implementer"))).toEqual(["Bash", "Edit", "Glob", "Grep", "Read", "Write"]);
+    expect(await tools(A("implementer"))).toEqual(["Bash", "Edit", "Glob", "Grep", "Read", "Skill", "Write"]);
     const b = await body(A("implementer"));
     for (const s of ["DONE", "DONE_WITH_CONCERNS", "BLOCKED", "NEEDS_CONTEXT", "sdd-engineering:test-driven-development", "sdd-engineering:verification-before-completion", "Ruling:", "STATUS:", "COMMIT:", "TESTS:", "RULINGS:"]) {
       expect(b, s).toContain(s);
@@ -262,7 +262,7 @@ describe("sdd-engineering implementer and verifier", () => {
 
   it("plan-verifier checks independently and writes only its report", async () => {
     expect((await readFrontmatter(A("plan-verifier"))).name).toBe("plan-verifier");
-    expect(await tools(A("plan-verifier"))).toEqual(["Bash", "Glob", "Grep", "Read", "Write"]);
+    expect(await tools(A("plan-verifier"))).toEqual(["Bash", "Glob", "Grep", "Read", "Skill", "Write"]);
     const b = await body(A("plan-verifier"));
     for (const s of ["Missing", "Extra", "Misunderstood", "Can't verify", "GO", "NO-GO", "${CLAUDE_PLUGIN_ROOT}/templates/verification-report.md", "VERDICT:", "FILE:", "FINDINGS:", "verification_dir"]) {
       expect(b, s).toContain(s);
@@ -307,7 +307,7 @@ describe("sdd-run orchestrator", () => {
 
   it("keeps a ledger and resumes from it", async () => {
     const b = await body(F);
-    for (const s of ["${CLAUDE_PLUGIN_ROOT}/templates/ledger.md", "first incomplete", "Ruling:", "BASE"]) {
+    for (const s of ["${CLAUDE_PLUGIN_ROOT}/templates/ledger.md", "first incomplete", "Ruling (Task N):", "Base"]) {
       expect(b, s).toContain(s);
     }
     expect(b).toMatch(/never dispatch implementers in parallel/i);
@@ -408,5 +408,47 @@ describe("userConfig fallbacks", () => {
     const b = await body(f);
     expect(b).toContain("${user_config.");
     expect(b).toMatch(/is empty or appears literally/);
+  });
+});
+
+describe("final review fixes", () => {
+  const RUN = "plugins/sdd-engineering/skills/sdd-run/SKILL.md";
+  const LEDGER = "plugins/sdd-engineering/templates/ledger.md";
+
+  it("ledger header records base, branch and mode", async () => {
+    const l = await read(LEDGER);
+    for (const s of ["**Base:**", "**Branch:**", "**Mode:**"]) expect(l, s).toContain(s);
+  });
+
+  it("ledger keeps rulings and blocked tasks apart from completed task lines", async () => {
+    const l = await read(LEDGER);
+    expect(l).toContain("Ruling (Task <N>):");
+    expect(l).not.toMatch(/Task <N>: Ruling/);
+    expect(l).toContain("## Blocked");
+    expect(l).toContain("Fix <N>: DONE");
+  });
+
+  it("resume only trusts DONE lines and checks git before re-running", async () => {
+    const b = await body(RUN);
+    expect(b).toContain("`Task N: DONE` or `Task N: DONE_WITH_CONCERNS`");
+    expect(b).toMatch(/git log <Base>\.\.HEAD/);
+    expect(b).toMatch(/read the Base/i);
+    expect(b).toContain("Ruling (Task N):");
+  });
+
+  it("auto mode reaches the retro and records assumptions", async () => {
+    const b = await body(RUN);
+    expect(b).toMatch(/run mode/);
+    expect(b).toMatch(/ASSUMPTIONS/);
+    expect(b).toMatch(/left for the user[\s\S]*?## Deferred/);
+    expect(await body("plugins/sdd-engineering/skills/workflow-retro/SKILL.md")).toMatch(/`Mode:`/);
+    expect(await body("plugins/sdd-engineering/agents/spec-creator.md")).toContain("ASSUMPTIONS:");
+  });
+
+  it("the fix pass uses the implementer's finding mode", async () => {
+    expect(await body("plugins/sdd-engineering/agents/implementer.md")).toContain("## Finding mode");
+    const b = await body(RUN);
+    expect(b).toContain("Fix N: DONE");
+    expect(b).toContain("fix pass: done");
   });
 });

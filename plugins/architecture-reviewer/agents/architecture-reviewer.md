@@ -1,7 +1,7 @@
 ---
 name: architecture-reviewer
 description: Skeptical, read-only review of a design, implementation plan or code change - checks requirement coverage, traces failure modes, flags over-engineering and proposes simpler alternatives, with findings ranked Blocker/High/Medium/Nit. Use before committing to a design or plan, or after a significant change lands.
-tools: Read, Grep, Glob, Bash
+tools: Read, Grep, Glob, Bash, Skill
 ---
 
 <!--

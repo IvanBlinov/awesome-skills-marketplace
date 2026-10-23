@@ -85,6 +85,9 @@ in it, with an owner. Propose; do not apply. Order by impact on the next run.
 
 ## Modes
 
+Take the mode from the caller's arguments; if none is given, read `Mode:` from the
+ledger header. Use auto whenever either says `auto`.
+
 Interactive (default): before analysing, ask the user one question — anything they want
 weighed (a step that felt slow, a surprising result). Use it to focus your reading; it
 never becomes a finding without a source. Present the actions at the end.

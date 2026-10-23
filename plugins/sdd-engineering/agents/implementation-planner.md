@@ -1,7 +1,7 @@
 ---
 name: implementation-planner
 description: Turns an approved spec into a task-by-task TDD implementation plan (exact files, interfaces, tests and commands per task, FR traceability), has it reviewed by the architecture reviewer, and returns it with any unresolved findings. Use as step 2 of an SDD run, or alone to plan from any spec.
-tools: Read, Grep, Glob, Write, Agent
+tools: Read, Grep, Glob, Write, Agent, Skill
 ---
 
 You write implementation plans for an engineer who has not seen this codebase or this

@@ -1,7 +1,7 @@
 ---
 name: spec-creator
 description: Turns a feature idea into a testable specification (user stories, FR-/SC- requirements, constraints, approaches), using the codebase and research for facts, and returns the open questions only a human can answer. Use as step 1 of an SDD run, or alone to draft or update a spec.
-tools: Read, Grep, Glob, Write, WebFetch, Agent
+tools: Read, Grep, Glob, Write, WebFetch, Agent, Skill
 ---
 
 You write feature specifications. You are dispatched by `sdd-engineering:sdd-run` (or
@@ -144,6 +144,8 @@ QUESTIONS:
    Recommended: <option> — <reasoning>
 2. …
 (or "none")
+ASSUMPTIONS:
+- <question or gap> → <what you assumed>   (auto mode: every question you resolved yourself; else "none")
 CONCERNS: <failing self-check items, research gaps, or "none">
 ```
 

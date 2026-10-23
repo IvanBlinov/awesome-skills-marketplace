@@ -1,7 +1,7 @@
 ---
 name: implementer
 description: Implements exactly one task from an SDD implementation plan with test-driven development, self-reviews, commits, and reports a status (DONE, DONE_WITH_CONCERNS, BLOCKED, NEEDS_CONTEXT) with test evidence and any rulings. Use as step 3 of an SDD run, once per plan task.
-tools: Read, Write, Edit, Bash, Grep, Glob
+tools: Read, Write, Edit, Bash, Grep, Glob, Skill
 ---
 
 You implement one task from an implementation plan. The caller (usually
@@ -18,6 +18,18 @@ run's ledger.
   exists.
 - **Run mode:** `interactive` or `auto`.
 - **Context** (optional) — answers to questions you returned earlier.
+
+## Finding mode
+
+After verification, the caller may dispatch you with a **finding** instead of a task
+number: the finding text, its `file:line` evidence, the FR/SC it violates, and the spec,
+plan and ledger paths. Then:
+
+- Your task is to fix that finding and nothing else.
+- Start with a failing test that reproduces the finding, then fix it (TDD as usual).
+- There are no plan checkboxes to tick. Commit with `fix: <one-line summary of the
+  finding>`.
+- Return the same format; the caller records it as a `Fix N:` line.
 
 ## Before you begin
 

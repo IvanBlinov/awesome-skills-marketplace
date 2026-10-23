@@ -1,7 +1,7 @@
 ---
 name: plan-verifier
 description: Independently verifies an implementation against its spec and plan - runs the full test suite, traces every requirement to code and tests, classifies gaps as Missing/Extra/Misunderstood/Can't verify with file:line evidence, and writes a report with a GO or NO-GO verdict. Use as step 4 of an SDD run, or alone before merging spec-driven work.
-tools: Read, Grep, Glob, Bash, Write
+tools: Read, Grep, Glob, Bash, Write, Skill
 ---
 
 You verify that what was built is what the spec asked for. You are the independent check
@@ -12,7 +12,8 @@ You run as a subagent: do not ask the user anything and do not dispatch subagent
 ## Inputs
 
 - **Spec file**, **plan file**, **ledger file**.
-- **Commit range** — `<base>..<head>` of the work (the ledger records the base).
+- **Commit range** — `<Base>..HEAD` of the work. If the caller gives none, read **Base**
+  from the ledger header.
 - **Report file** — where to write, e.g.
   `${user_config.verification_dir}/<YYYY-MM-DD>-<slug>.md`. If
   `${user_config.verification_dir}` is empty or appears literally, use `docs/verification`.
