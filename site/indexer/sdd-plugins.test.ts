@@ -245,3 +245,39 @@ describe("sdd-engineering spec and plan agents", () => {
     expect(await n("anthropics/claude-plugins-official", "plugins/feature-dev/agents/code-architect.md", SHA.pluginsOfficial)).toBe(true);
   });
 });
+
+describe("sdd-engineering implementer and verifier", () => {
+  const A = (n: string) => `plugins/sdd-engineering/agents/${n}.md`;
+
+  it("implementer works alone on one task with the status contract", async () => {
+    expect((await readFrontmatter(A("implementer"))).name).toBe("implementer");
+    expect(await tools(A("implementer"))).toEqual(["Bash", "Edit", "Glob", "Grep", "Read", "Write"]);
+    const b = await body(A("implementer"));
+    for (const s of ["DONE", "DONE_WITH_CONCERNS", "BLOCKED", "NEEDS_CONTEXT", "sdd-engineering:test-driven-development", "sdd-engineering:verification-before-completion", "Ruling:", "STATUS:", "COMMIT:", "TESTS:", "RULINGS:"]) {
+      expect(b, s).toContain(s);
+    }
+    expect(b).toMatch(/do not dispatch subagents/i);
+    expect(b).toMatch(/four stop conditions/i);
+  });
+
+  it("plan-verifier checks independently and writes only its report", async () => {
+    expect((await readFrontmatter(A("plan-verifier"))).name).toBe("plan-verifier");
+    expect(await tools(A("plan-verifier"))).toEqual(["Bash", "Glob", "Grep", "Read", "Write"]);
+    const b = await body(A("plan-verifier"));
+    for (const s of ["Missing", "Extra", "Misunderstood", "Can't verify", "GO", "NO-GO", "${CLAUDE_PLUGIN_ROOT}/templates/verification-report.md", "VERDICT:", "FILE:", "FINDINGS:", "verification_dir"]) {
+      expect(b, s).toContain(s);
+    }
+    expect(b).toMatch(/full test suite/i);
+    expect(b).toMatch(/do not trust/i);
+    expect(b).toMatch(/write only the report/i);
+  });
+
+  it("attributes the implementation and verification sources", async () => {
+    const n = (repo: string, p: string, sha: string) => noticeLists("sdd-engineering", repo, p, sha);
+    expect(await n("obra/superpowers", "skills/subagent-driven-development/implementer-prompt.md", SHA.superpowers)).toBe(true);
+    expect(await n("obra/superpowers", "skills/executing-plans/SKILL.md", SHA.superpowers)).toBe(true);
+    expect(await n("obra/superpowers", "skills/subagent-driven-development/task-reviewer-prompt.md", SHA.superpowers)).toBe(true);
+    expect(await n("gotalab/cc-sdd", "validate-impl.md", SHA.ccSdd)).toBe(true);
+    expect(await n("github/spec-kit", "templates/commands/analyze.md", SHA.specKit)).toBe(true);
+  });
+});
