@@ -329,3 +329,35 @@ describe("sdd-run orchestrator", () => {
     expect(await noticeLists("sdd-engineering", "obra/superpowers", "skills/subagent-driven-development/SKILL.md", SHA.superpowers)).toBe(true);
   });
 });
+
+describe("workflow-retro skill", () => {
+  const F = "plugins/sdd-engineering/skills/workflow-retro/SKILL.md";
+
+  it("reads the run's evidence and requires a source per finding", async () => {
+    expect((await readFrontmatter(F)).name).toBe("workflow-retro");
+    const b = await body(F);
+    for (const s of ["spec", "plan", "ledger", "verification report", "git log", "${CLAUDE_PLUGIN_ROOT}/templates/retro.md", "retros_dir"]) {
+      expect(b, s).toContain(s);
+    }
+    expect(b).toMatch(/without a source[\s\S]*?drop it/i);
+  });
+
+  it("covers the categories aimed at the workflow itself", async () => {
+    const b = await body(F);
+    for (const s of ["Agents and prompts", "Skills and templates", "Navigation", "Automated checks", "Coding standards", "Tool economy", "Information access"]) {
+      expect(b, s).toContain(s);
+    }
+  });
+
+  it("follows up the previous retro and writes only its own file", async () => {
+    const b = await body(F);
+    expect(b).toContain("Previous Retro Follow-through");
+    expect(b).toMatch(/writes only the retro file/i);
+    expect(b).toMatch(/no time estimates/i);
+  });
+
+  it("attributes its sources", async () => {
+    expect(await noticeLists("sdd-engineering", "mattpocock/skills", "skills/engineering/retro/SKILL.md", SHA.mattpocock)).toBe(true);
+    expect(await noticeLists("sdd-engineering", "bmad-code-org/BMAD-METHOD", "skills/bmad-retrospective/workflow.md", SHA.bmad)).toBe(true);
+  });
+});
