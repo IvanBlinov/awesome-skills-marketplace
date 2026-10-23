@@ -2,10 +2,20 @@ import MiniSearch from "minisearch";
 import type { Artifact, ArtifactType } from "../catalog/types";
 import { parseQuery } from "./parseQuery";
 
+/** Facet selections. Within a facet any selected value matches; keywords must all match. */
 export interface Filters {
   types: ArtifactType[];
-  category: string | null;
-  tags: string[];
+  categories: string[];
+  keywords: string[];
+  authors: string[];
+  plugins: string[];
+}
+
+export const NO_FILTERS: Filters = { types: [], categories: [], keywords: [], authors: [], plugins: [] };
+
+/** Plugin tags plus the artifact's own keywords — what the Keyword facet lists. */
+export function keywordsOf(a: Artifact): string[] {
+  return [...new Set([...a.tags, ...a.keywords])];
 }
 
 export interface SearchResult {
@@ -43,8 +53,10 @@ export function createSearch(artifacts: Artifact[]) {
     const types = filters.types.length ? filters.types : typeFilter ? [typeFilter] : [];
     const passes = (a: Artifact) =>
       (types.length === 0 || types.includes(a.type)) &&
-      (filters.category === null || a.category === filters.category) &&
-      filters.tags.every((t) => a.tags.includes(t));
+      (filters.categories.length === 0 || filters.categories.includes(a.category)) &&
+      (filters.authors.length === 0 || (a.author !== undefined && filters.authors.includes(a.author))) &&
+      (filters.plugins.length === 0 || filters.plugins.includes(a.plugin)) &&
+      filters.keywords.every((k) => keywordsOf(a).includes(k));
 
     if (terms.length === 0) {
       return { results: artifacts.filter(passes).sort(byRecency), usedFallback: false, detectedType: typeFilter };

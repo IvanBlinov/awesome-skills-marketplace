@@ -4,7 +4,7 @@ test("finds a skill from a natural-language query", async ({ page }) => {
   await page.goto("");
   await page.getByRole("searchbox").fill("I need a skill to find skills");
   await expect(page.getByRole("article").first().getByRole("heading")).toHaveText("find-skill");
-  await expect(page.getByRole("button", { name: "skill", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("checkbox", { name: /^skill/ })).toBeChecked();
   await expect(page).toHaveURL(/q=I\+need\+a\+skill/);
 });
 

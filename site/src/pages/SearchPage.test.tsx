@@ -14,7 +14,8 @@ describe("SearchPage", () => {
     renderSearch();
     await userEvent.type(screen.getByRole("searchbox"), "I need a skill for deploying to Railway");
     expect(cardNames()[0]).toBe("deploy-railway");
-    expect(screen.getByRole("button", { name: "skill" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("checkbox", { name: /^skill/ })).toBeChecked();
+    expect(document.querySelector(".result-bar")?.textContent).toMatch(/\d+ results? for “I need a skill for deploying to Railway”/);
   });
 
   it("writes the query to the url after a debounce", async () => {
@@ -35,7 +36,7 @@ describe("SearchPage", () => {
 
   it("toggles type filters", async () => {
     renderSearch();
-    await userEvent.click(screen.getByRole("button", { name: "agent" }));
+    await userEvent.click(screen.getByRole("checkbox", { name: /^agent/ }));
     expect(cardNames()).toEqual(["reviewer"]);
     expect(screen.getByTestId("location").textContent).toBe("/?type=agent");
   });
@@ -86,5 +87,19 @@ describe("SearchPage url sync", () => {
     await userEvent.click(screen.getByRole("link", { name: "Home" }));
     expect(screen.getByRole("searchbox")).toHaveValue("");
     expect(screen.getAllByRole("article")).toHaveLength(CATALOG.artifacts.length);
+  });
+});
+
+describe("SearchPage catalog stats", () => {
+  it("shows the catalog totals and filters by type when one is clicked", async () => {
+    renderSearch();
+    const stats = screen.getByRole("group", { name: "Catalog contents" });
+    expect(within(stats).getByRole("button", { name: "3 plugins" })).toBeInTheDocument();
+    await userEvent.click(within(stats).getByRole("button", { name: "3 skills" }));
+    expect(screen.getByTestId("location").textContent).toBe("/?type=skill");
+    expect(cardNames()).toEqual(expect.arrayContaining(["deploy-railway", "lint-fast", "notes"]));
+    expect(cardNames()).toHaveLength(3);
+    await userEvent.click(within(stats).getByRole("button", { name: "3 skills" }));
+    expect(screen.getByTestId("location").textContent).toBe("/");
   });
 });

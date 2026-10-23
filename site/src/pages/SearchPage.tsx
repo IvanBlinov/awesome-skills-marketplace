@@ -2,13 +2,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import type { Catalog } from "../catalog/types";
 import { ArtifactCard } from "../components/ArtifactCard";
-import { FilterChips } from "../components/FilterChips";
+import { CatalogStats } from "../components/CatalogStats";
+import { FacetSidebar } from "../components/FacetSidebar";
 import { skillRequestUrl } from "../request/issueUrl";
-import { createSearch } from "../search/createSearch";
+import { createSearch, NO_FILTERS } from "../search/createSearch";
+import { facetCounts } from "../search/facets";
 import { readSearchState, writeSearchState, type SearchState } from "../state/urlState";
 
 const URL_DEBOUNCE_MS = 200;
-const TOP_TAGS = 12;
 
 interface Props {
   catalog: Catalog;
@@ -16,16 +17,6 @@ interface Props {
   isInBundle?: (plugin: string) => boolean;
 }
 
-function topTags(catalog: Catalog): string[] {
-  const counts = catalog.artifacts
-    .filter((a) => a.type === "plugin")
-    .flatMap((a) => a.tags)
-    .reduce<Record<string, number>>((acc, t) => ({ ...acc, [t]: (acc[t] ?? 0) + 1 }), {});
-  return Object.entries(counts)
-    .sort(([a, x], [b, y]) => y - x || a.localeCompare(b))
-    .slice(0, TOP_TAGS)
-    .map(([t]) => t);
-}
 
 export function SearchPage({ catalog, onAddToBundle, isInBundle }: Props) {
   const location = useLocation();
@@ -35,8 +26,9 @@ export function SearchPage({ catalog, onAddToBundle, isInBundle }: Props) {
   const input = useRef<HTMLInputElement>(null);
 
   const search = useMemo(() => createSearch(catalog.artifacts), [catalog]);
-  const tags = useMemo(() => topTags(catalog), [catalog]);
   const result = useMemo(() => search(state.q, state), [search, state]);
+  const facets = useMemo(() => facetCounts(search, state.q, state), [search, state]);
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const writeUrl = (next: SearchState) => navigate({ search: writeSearchState(next) }, { replace: true });
 
@@ -71,11 +63,19 @@ export function SearchPage({ catalog, onAddToBundle, isInBundle }: Props) {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const hasFilters = state.q !== "" || state.types.length > 0 || state.category !== null || state.tags.length > 0;
+  const selectedCount =
+    state.types.length + state.categories.length + state.keywords.length + state.authors.length + state.plugins.length;
+  const hasFilters = state.q !== "" || selectedCount > 0;
+  const query = state.q.trim();
   const { results, usedFallback, detectedType } = result;
 
   return (
     <section className="search">
+      <CatalogStats
+        artifacts={catalog.artifacts}
+        active={state.types}
+        onSelect={(t) => update({ ...state, types: state.types.length === 1 && state.types[0] === t ? [] : [t] })}
+      />
       <div className="search-box">
         <label htmlFor="q" className="visually-hidden">
           Search the marketplace
@@ -95,53 +95,67 @@ export function SearchPage({ catalog, onAddToBundle, isInBundle }: Props) {
         </kbd>
       </div>
 
-      <FilterChips
-        types={state.types}
-        detectedType={detectedType}
-        category={state.category}
-        tags={state.tags}
-        categories={catalog.categories}
-        topTags={tags}
-        onTypes={(types) => update({ ...state, types })}
-        onCategory={(category) => update({ ...state, category })}
-        onTags={(t) => update({ ...state, tags: t })}
-      />
-
-      <div className="result-bar">
-        <span aria-live="polite">
-          {results.length} result{results.length === 1 ? "" : "s"}
-        </span>
-        {hasFilters && (
-          <button type="button" className="link-btn" onClick={() => update({ q: "", types: [], category: null, tags: [] })}>
-            Clear search and filters
+      <div className="search-layout">
+        <aside className={`sidebar${filtersOpen ? " sidebar-open" : ""}`} aria-label="Filters">
+          <button
+            type="button"
+            className="btn btn-ghost filters-toggle"
+            aria-expanded={filtersOpen}
+            onClick={() => setFiltersOpen(!filtersOpen)}
+          >
+            Filters{selectedCount > 0 ? ` (${selectedCount})` : ""}
           </button>
-        )}
-      </div>
-
-      {usedFallback && (
-        <p className="note">No artifact matches every word, so these match some of your words.</p>
-      )}
-
-      {results.length === 0 ? (
-        <div className="empty">
-          <p>{state.q.trim() ? <>Nothing found for “{state.q.trim()}”.</> : "Nothing matches these filters."}</p>
-          <p>Tell us what you need and we will consider building it.</p>
-          <a className="btn" href={skillRequestUrl(state.q)} target="_blank" rel="noopener noreferrer">
-            Request this skill
-          </a>
-        </div>
-      ) : (
-        <div className="grid">
-          {results.map((a) => (
-            <ArtifactCard
-              key={a.id}
-              artifact={a}
-              onAddToBundle={onAddToBundle}
-              inBundle={isInBundle?.(a.plugin) ?? false}
+          <div className="sidebar-body">
+            <FacetSidebar
+              counts={facets}
+              filters={state}
+              detectedType={detectedType}
+              onChange={(key, values) => update({ ...state, [key]: values })}
             />
-          ))}
+          </div>
+        </aside>
+
+        <div className="results">
+          <div className="result-bar">
+            <span aria-live="polite">
+              <strong>
+                {results.length} result{results.length === 1 ? "" : "s"}
+              </strong>
+              {query && <> for “{query}”</>}
+            </span>
+            {hasFilters && (
+              <button type="button" className="link-btn" onClick={() => update({ q: "", ...NO_FILTERS })}>
+                Clear search and filters
+              </button>
+            )}
+          </div>
+
+          {usedFallback && (
+            <p className="note">No artifact matches every word, so these match some of your words.</p>
+          )}
+
+          {results.length === 0 ? (
+            <div className="empty">
+              <p>{query ? <>Nothing found for “{query}”.</> : "Nothing matches these filters."}</p>
+              <p>Tell us what you need and we will consider building it.</p>
+              <a className="btn" href={skillRequestUrl(state.q)} target="_blank" rel="noopener noreferrer">
+                Request this skill
+              </a>
+            </div>
+          ) : (
+            <div className="grid">
+              {results.map((a) => (
+                <ArtifactCard
+                  key={a.id}
+                  artifact={a}
+                  onAddToBundle={onAddToBundle}
+                  inBundle={isInBundle?.(a.plugin) ?? false}
+                />
+              ))}
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </section>
   );
 }
