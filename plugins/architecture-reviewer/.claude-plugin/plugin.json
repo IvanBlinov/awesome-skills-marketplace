@@ -1,0 +1,13 @@
+{
+  "name": "architecture-reviewer",
+  "version": "1.0.0",
+  "description": "Skeptical, read-only architecture review of designs, plans and code: missed requirements, failure modes, over-engineering and simpler alternatives",
+  "author": {
+    "name": "Ivan Blinov",
+    "url": "https://github.com/IvanBlinov"
+  },
+  "homepage": "https://ivanblinov.github.io/awesome-skills-marketplace/",
+  "repository": "https://github.com/IvanBlinov/awesome-skills-marketplace",
+  "license": "MIT",
+  "keywords": ["architecture", "review", "design"]
+}

@@ -28,7 +28,7 @@ const CATEGORY: Record<string, string> = {
 };
 
 /** Plugins implemented so far; later tasks append. */
-const PLUGINS = ["research-tools"];
+const PLUGINS = ["research-tools", "architecture-reviewer"];
 
 const read = (rel: string) => readFile(path.join(REPO, rel), "utf8");
 const body = async (rel: string) => matter(await read(rel)).content;
@@ -120,3 +120,46 @@ describe("research-tools", () => {
   });
 });
 
+
+describe("architecture-reviewer", () => {
+  const agent = "plugins/architecture-reviewer/agents/architecture-reviewer.md";
+  const rubric = "plugins/architecture-reviewer/skills/architecture-review-rubric/SKILL.md";
+
+  it("reviewer is read-only", async () => {
+    expect((await readFrontmatter(agent)).name).toBe("architecture-reviewer");
+    expect(await tools(agent)).toEqual(["Bash", "Glob", "Grep", "Read"]);
+    expect(await body(agent)).toMatch(/read-only/i);
+    expect(await body(agent)).toMatch(/never create or modify files/i);
+  });
+
+  it("reviewer uses tiered findings and the rubric", async () => {
+    const b = await body(agent);
+    for (const s of ["Blocker", "High", "Medium", "Nit", "If I could only change one thing", "architecture-reviewer:architecture-review-rubric"]) {
+      expect(b).toContain(s);
+    }
+  });
+
+  it("rubric has the checklist items", async () => {
+    expect((await readFrontmatter(rubric)).name).toBe("architecture-review-rubric");
+    const b = (await body(rubric)).toLowerCase();
+    for (const s of ["every requirement", "verified current", "existing codebase", "operational", "deferred"]) {
+      expect(b).toContain(s);
+    }
+  });
+
+  it("keeps the Apache-2.0 notice on derived files", async () => {
+    for (const f of [agent, rubric]) {
+      const text = await read(f);
+      expect(text).toContain("Apache License, Version 2.0");
+      expect(text).toContain("Modified by awesome-skills-marketplace");
+    }
+    expect(existsSync(path.join(REPO, "plugins/architecture-reviewer/LICENSE-APACHE-2.0"))).toBe(true);
+  });
+
+  it("attributes its sources", async () => {
+    const n = (repo: string, p: string, sha: string) => noticeLists("architecture-reviewer", repo, p, sha);
+    expect(await n("anthropics/claude-plugins-official", "plugins/code-modernization/agents/architecture-critic.md", SHA.pluginsOfficial)).toBe(true);
+    expect(await n("wshobson/agents", "plugins/comprehensive-review/agents/architect-review.md", SHA.wshobson)).toBe(true);
+    expect(await n("bmad-code-org/BMAD-METHOD", "skills/bmad-architecture/references/reviewer-gate.md", SHA.bmad)).toBe(true);
+  });
+});

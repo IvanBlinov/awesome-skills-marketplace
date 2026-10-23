@@ -28,6 +28,17 @@
         "citations",
         "web"
       ]
+    },
+    {
+      "name": "architecture-reviewer",
+      "source": "./plugins/architecture-reviewer",
+      "description": "Skeptical, read-only architecture review of designs, plans and code, with a reusable review rubric",
+      "category": "quality",
+      "tags": [
+        "architecture",
+        "review",
+        "design"
+      ]
     }
   ]
 }
