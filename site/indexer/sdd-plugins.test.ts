@@ -207,3 +207,41 @@ describe("sdd-engineering manifest and templates", () => {
     expect(await read("plugins/sdd-engineering/skills/test-driven-development/SKILL.md")).not.toMatch(/human partner/);
   });
 });
+
+describe("sdd-engineering spec and plan agents", () => {
+  const A = (n: string) => `plugins/sdd-engineering/agents/${n}.md`;
+  const NESTING = /CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH/;
+
+  it("spec-creator can research but asks the user nothing directly", async () => {
+    expect((await readFrontmatter(A("spec-creator"))).name).toBe("spec-creator");
+    expect(await tools(A("spec-creator"))).toEqual(["Agent", "Glob", "Grep", "Read", "WebFetch", "Write"]);
+    const b = await body(A("spec-creator"));
+    for (const s of ["research-tools:researcher", "research-tools:source-citation", "${CLAUDE_PLUGIN_ROOT}/templates/spec.md", "## Clarifications", "Recommended:", "QUESTIONS:", "STATUS:", "FILE:"]) {
+      expect(b, s).toContain(s);
+    }
+    expect(b).toMatch(/at most 3 \[NEEDS CLARIFICATION/);
+    expect(b).toMatch(/at most 5 questions/i);
+    expect(b).toMatch(/never ask the user directly/i);
+    expect(b).toMatch(NESTING);
+  });
+
+  it("implementation-planner gets the plan reviewed", async () => {
+    expect((await readFrontmatter(A("implementation-planner"))).name).toBe("implementation-planner");
+    expect(await tools(A("implementation-planner"))).toEqual(["Agent", "Glob", "Grep", "Read", "Write"]);
+    const b = await body(A("implementation-planner"));
+    for (const s of ["architecture-reviewer:architecture-reviewer", "${CLAUDE_PLUGIN_ROOT}/templates/plan.md", "extend / new / hybrid", "[P]", "FR-", "Review Focus", "REVIEW:", "STATUS:", "FILE:"]) {
+      expect(b, s).toContain(s);
+    }
+    expect(b).toMatch(/self-review/i);
+    expect(b).toMatch(NESTING);
+  });
+
+  it("attributes the spec and plan sources", async () => {
+    const n = (repo: string, p: string, sha: string) => noticeLists("sdd-engineering", repo, p, sha);
+    expect(await n("github/spec-kit", "templates/commands/specify.md", SHA.specKit)).toBe(true);
+    expect(await n("github/spec-kit", "templates/commands/clarify.md", SHA.specKit)).toBe(true);
+    expect(await n("obra/superpowers", "skills/brainstorming/SKILL.md", SHA.superpowers)).toBe(true);
+    expect(await n("obra/superpowers", "skills/writing-plans/SKILL.md", SHA.superpowers)).toBe(true);
+    expect(await n("anthropics/claude-plugins-official", "plugins/feature-dev/agents/code-architect.md", SHA.pluginsOfficial)).toBe(true);
+  });
+});
