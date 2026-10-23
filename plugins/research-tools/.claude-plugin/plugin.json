@@ -1,0 +1,21 @@
+{
+  "name": "research-tools",
+  "version": "1.0.0",
+  "description": "Researcher agent that answers technical questions from primary sources and writes a cited report, plus source-citation rules other agents can reuse",
+  "author": {
+    "name": "Ivan Blinov",
+    "url": "https://github.com/IvanBlinov"
+  },
+  "homepage": "https://ivanblinov.github.io/awesome-skills-marketplace/",
+  "repository": "https://github.com/IvanBlinov/awesome-skills-marketplace",
+  "license": "MIT",
+  "keywords": ["research", "citations", "web", "docs"],
+  "userConfig": {
+    "research_dir": {
+      "type": "directory",
+      "title": "Research reports directory",
+      "description": "Where the researcher writes its reports, relative to the project root. Default: docs/research",
+      "default": "docs/research"
+    }
+  }
+}

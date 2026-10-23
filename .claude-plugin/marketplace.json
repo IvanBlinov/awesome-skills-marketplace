@@ -12,7 +12,22 @@
       "source": "./plugins/marketplace-tools",
       "description": "Find skills, agents and plugins in this marketplace from inside Claude Code",
       "category": "meta",
-      "tags": ["search", "catalog", "discovery"]
+      "tags": [
+        "search",
+        "catalog",
+        "discovery"
+      ]
+    },
+    {
+      "name": "research-tools",
+      "source": "./plugins/research-tools",
+      "description": "Researcher agent that answers technical questions from primary sources with a cited report, plus reusable source-citation rules",
+      "category": "data-ai",
+      "tags": [
+        "research",
+        "citations",
+        "web"
+      ]
     }
   ]
 }
