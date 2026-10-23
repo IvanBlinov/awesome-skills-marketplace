@@ -24,3 +24,5 @@ listed commit.
 | `agents/plan-verifier.md` | [gotalab/cc-sdd](https://github.com/gotalab/cc-sdd) `tools/cc-sdd/templates/agents/claude-code-agent/agents/validate-impl.md` | `e2a0c671aef37a482404905b409ab5c27092b25b` | MIT, Copyright (c) 2025 gotalab |
 | `agents/plan-verifier.md` | [github/spec-kit](https://github.com/github/spec-kit) `templates/commands/analyze.md` | `27d14e20c187c1f2916540ea201ecbdc9f8ed588` | MIT, Copyright GitHub, Inc. |
 | `agents/plan-verifier.md` | [obra/superpowers](https://github.com/obra/superpowers) `skills/subagent-driven-development/task-reviewer-prompt.md` | `2ce8aa15d05bd57213e6f746f953aafb7ded7a8b` | MIT, Copyright (c) 2025 Jesse Vincent |
+| `skills/sdd-run/SKILL.md` | [obra/superpowers](https://github.com/obra/superpowers) `skills/subagent-driven-development/SKILL.md`, `skills/executing-plans/SKILL.md`, `skills/brainstorming/SKILL.md` | `2ce8aa15d05bd57213e6f746f953aafb7ded7a8b` | MIT, Copyright (c) 2025 Jesse Vincent |
+| `skills/sdd-run/SKILL.md` | [github/spec-kit](https://github.com/github/spec-kit) `templates/commands/clarify.md` (question loop) | `27d14e20c187c1f2916540ea201ecbdc9f8ed588` | MIT, Copyright GitHub, Inc. |

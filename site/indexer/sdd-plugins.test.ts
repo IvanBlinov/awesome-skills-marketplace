@@ -281,3 +281,51 @@ describe("sdd-engineering implementer and verifier", () => {
     expect(await n("github/spec-kit", "templates/commands/analyze.md", SHA.specKit)).toBe(true);
   });
 });
+
+describe("sdd-run orchestrator", () => {
+  const F = "plugins/sdd-engineering/skills/sdd-run/SKILL.md";
+
+  it("runs in the main session", async () => {
+    const fm = await readFrontmatter(F);
+    expect(fm.name).toBe("sdd-run");
+    expect(fm.context).toBeUndefined();
+  });
+
+  it("dispatches every step by namespaced name", async () => {
+    const b = await body(F);
+    for (const s of ["sdd-engineering:spec-creator", "sdd-engineering:implementation-planner", "sdd-engineering:implementer", "sdd-engineering:plan-verifier", "sdd-engineering:workflow-retro"]) {
+      expect(b, s).toContain(s);
+    }
+  });
+
+  it("owns the conversation, gates and auto mode", async () => {
+    const b = await body(F);
+    for (const s of ["GATE 1", "GATE 2", "--auto", "one question per message", "Recommended", "## Assumptions"]) {
+      expect(b, s).toContain(s);
+    }
+  });
+
+  it("keeps a ledger and resumes from it", async () => {
+    const b = await body(F);
+    for (const s of ["${CLAUDE_PLUGIN_ROOT}/templates/ledger.md", "first incomplete", "Ruling:", "BASE"]) {
+      expect(b, s).toContain(s);
+    }
+    expect(b).toMatch(/never dispatch implementers in parallel/i);
+  });
+
+  it("handles every status and the verify/fix loop", async () => {
+    const b = await body(F);
+    for (const s of ["DONE_WITH_CONCERNS", "NEEDS_CONTEXT", "BLOCKED", "NO-GO", "one fix pass", "Rulings I made", "Deferred"]) {
+      expect(b, s).toContain(s);
+    }
+  });
+
+  it("uses the configured directories", async () => {
+    const b = await body(F);
+    for (const k of ["specs_dir", "plans_dir", "verification_dir", "retros_dir"]) expect(b).toContain(`\${user_config.${k}}`);
+  });
+
+  it("attributes its sources", async () => {
+    expect(await noticeLists("sdd-engineering", "obra/superpowers", "skills/subagent-driven-development/SKILL.md", SHA.superpowers)).toBe(true);
+  });
+});
