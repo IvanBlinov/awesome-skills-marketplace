@@ -17,7 +17,7 @@ Arguments: `$ARGUMENTS`
 
 Called from `sdd-engineering:sdd-run`, you get the slug and paths. Called by the user,
 find them from the slug or ledger path in the arguments (or the most recent ledger in
-`${user_config.plans_dir}`, defaulting to `docs/plans` if that appears literally), and
+`${user_config.plans_dir}`; if that is empty or appears literally, use `docs/plans`), and
 read:
 
 | Evidence | Use |
@@ -36,7 +36,7 @@ Record any missing input under *Summary → Missing inputs*: a reader must be ab
 ## Working document
 
 Create the retro from `${CLAUDE_PLUGIN_ROOT}/templates/retro.md` at
-`${user_config.retros_dir}/<YYYY-MM-DD>-<slug>.md` (default directory `docs/retros`)
+`${user_config.retros_dir}/<YYYY-MM-DD>-<slug>.md` (if that directory is empty or appears literally, use `docs/retros`)
 first, and fill it as you go. If the file already exists, load it, reconcile it with the
 current evidence (the evidence wins) and continue where it stopped.
 

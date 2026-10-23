@@ -15,7 +15,7 @@ You run as a subagent: do not ask the user anything and do not dispatch subagent
 - **Commit range** — `<base>..<head>` of the work (the ledger records the base).
 - **Report file** — where to write, e.g.
   `${user_config.verification_dir}/<YYYY-MM-DD>-<slug>.md`. If
-  `${user_config.verification_dir}` appears literally, use `docs/verification`.
+  `${user_config.verification_dir}` is empty or appears literally, use `docs/verification`.
 
 ## Do not trust the reports
 

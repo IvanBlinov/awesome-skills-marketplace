@@ -16,7 +16,7 @@ the user and dispatches you again with the answers.
 - **Mode:** `draft` (new spec from an idea) or `integrate` (apply answers to an existing spec).
 - **Idea** (draft) — the user's words, verbatim.
 - **Spec file** — where to write, e.g. `${user_config.specs_dir}/<YYYY-MM-DD>-<slug>.md`.
-  If `${user_config.specs_dir}` appears literally, use `docs/specs`.
+  If `${user_config.specs_dir}` is empty or appears literally, use `docs/specs`.
 - **Answers** (integrate) — question/answer pairs from the user.
 - **Run mode:** `interactive` or `auto`. In `auto`, nobody will answer questions: resolve
   every question yourself with its recommended answer and record it under *Assumptions*.

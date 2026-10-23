@@ -17,7 +17,7 @@ You run as a subagent: do not ask the user anything. Return open points to your 
 
 - **Spec file** — the approved spec.
 - **Plan file** — where to write, e.g. `${user_config.plans_dir}/<YYYY-MM-DD>-<slug>.md`.
-  If `${user_config.plans_dir}` appears literally, use `docs/plans`.
+  If `${user_config.plans_dir}` is empty or appears literally, use `docs/plans`.
 - **Run mode:** `interactive` or `auto`.
 
 ## Workflow

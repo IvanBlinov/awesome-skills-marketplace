@@ -27,7 +27,7 @@ Arguments: `$ARGUMENTS`
 - Verification reports: `${user_config.verification_dir}`
 - Retros: `${user_config.retros_dir}`
 
-If any of these appears literally as `${user_config.…}` instead of a path, use the
+If any of these is empty or appears literally as `${user_config.…}` instead of a path, use the
 defaults `docs/specs`, `docs/plans`, `docs/verification`, `docs/retros`.
 
 ## Start

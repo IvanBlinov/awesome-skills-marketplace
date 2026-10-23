@@ -395,3 +395,18 @@ describe("documentation", () => {
     }
   });
 });
+
+describe("userConfig fallbacks", () => {
+  it.each([
+    "plugins/research-tools/agents/researcher.md",
+    "plugins/sdd-engineering/agents/spec-creator.md",
+    "plugins/sdd-engineering/agents/implementation-planner.md",
+    "plugins/sdd-engineering/agents/plan-verifier.md",
+    "plugins/sdd-engineering/skills/sdd-run/SKILL.md",
+    "plugins/sdd-engineering/skills/workflow-retro/SKILL.md",
+  ])("%s falls back to the default when an option is empty or unsubstituted", async (f) => {
+    const b = await body(f);
+    expect(b).toContain("${user_config.");
+    expect(b).toMatch(/is empty or appears literally/);
+  });
+});

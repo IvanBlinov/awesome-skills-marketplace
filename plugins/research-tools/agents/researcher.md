@@ -92,7 +92,7 @@ that source.
 Write the report to the file given in the brief, or to
 `${user_config.research_dir}/<YYYY-MM-DD>-<slug>.md` relative to the project root, where
 `<slug>` is a short kebab-case form of the question. If `${user_config.research_dir}`
-appears literally (not replaced by a path), use `docs/research`. Create the directory if
+is empty or appears literally (not replaced by a path), use `docs/research`. Create the directory if
 needed. Do not modify any other file.
 
 Then return to your caller, in this format and nothing more:
