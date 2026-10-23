@@ -28,7 +28,7 @@ const CATEGORY: Record<string, string> = {
 };
 
 /** Plugins implemented so far; later tasks append. */
-const PLUGINS = ["research-tools", "architecture-reviewer"];
+const PLUGINS = ["research-tools", "architecture-reviewer", "sdd-engineering"];
 
 const read = (rel: string) => readFile(path.join(REPO, rel), "utf8");
 const body = async (rel: string) => matter(await read(rel)).content;
@@ -359,5 +359,39 @@ describe("workflow-retro skill", () => {
   it("attributes its sources", async () => {
     expect(await noticeLists("sdd-engineering", "mattpocock/skills", "skills/engineering/retro/SKILL.md", SHA.mattpocock)).toBe(true);
     expect(await noticeLists("sdd-engineering", "bmad-code-org/BMAD-METHOD", "skills/bmad-retrospective/workflow.md", SHA.bmad)).toBe(true);
+  });
+});
+
+describe("documentation", () => {
+  it("sdd-engineering README explains how everything fits together", async () => {
+    const r = await read("plugins/sdd-engineering/README.md");
+    for (const h of [
+      "## What is Spec Driven Development",
+      "## Install",
+      "## Quick start",
+      "## The pipeline",
+      "## Agents and skills",
+      "## How the plugins fit together",
+      "## Output files and configuration",
+      "## Auto mode, resuming and nesting",
+      "## Versions",
+      "## Credits",
+    ]) {
+      expect(r, h).toContain(h);
+    }
+    for (const s of ["GATE 1", "GATE 2", "/sdd-engineering:sdd-run", "claude plugin prune", "research-tools", "architecture-reviewer", "CHANGELOG.md", "NOTICE.md"]) {
+      expect(r, s).toContain(s);
+    }
+  });
+
+  it("sdd-engineering NOTICE carries the MIT license text", async () => {
+    expect(await read("plugins/sdd-engineering/NOTICE.md")).toContain("Permission is hereby granted, free of charge");
+  });
+
+  it("root README lists every plugin", async () => {
+    const r = await read("README.md");
+    for (const p of ["marketplace-tools", "research-tools", "architecture-reviewer", "sdd-engineering"]) {
+      expect(r).toContain(`[${p}](plugins/${p})`);
+    }
   });
 });

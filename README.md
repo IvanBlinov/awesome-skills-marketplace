@@ -44,13 +44,21 @@ for any set of plugins):
 
 | Plugin | Category | Description |
 |---|---|---|
+| [sdd-engineering](plugins/sdd-engineering) | productivity | Spec Driven Development: spec → plan → TDD implementation → verification → retro, with approval gates |
+| [research-tools](plugins/research-tools) | data-ai | Researcher agent with cited, primary-source reports; reusable citation rules |
+| [architecture-reviewer](plugins/architecture-reviewer) | quality | Skeptical, read-only architecture review of designs, plans and code |
 | [marketplace-tools](plugins/marketplace-tools) | meta | Find skills, agents and plugins in this marketplace from inside Claude Code |
+
+`sdd-engineering` depends on `research-tools` and `architecture-reviewer`; installing it
+installs both.
 
 ## Contributing
 
 Each plugin lives in `plugins/<name>/` with `.claude-plugin/plugin.json`, `README.md`,
 `LICENSE` and its components (`skills/`, `agents/`, `commands/`, `hooks/`, `.mcp.json`).
 Conventions are in [docs/specs/2026-10-21-catalog-site.md](docs/specs/2026-10-21-catalog-site.md) §5
-and are checked in CI. Bump `version` in `plugin.json` on every change.
+and are checked in CI. Every change to a plugin needs a `version` bump in its
+`plugin.json` and a `CHANGELOG.md` entry; releases are tagged with
+`claude plugin tag plugins/<name> --push`.
 
 Missing something? [Request a skill](https://github.com/IvanBlinov/awesome-skills-marketplace/issues/new?template=skill-request.yml).

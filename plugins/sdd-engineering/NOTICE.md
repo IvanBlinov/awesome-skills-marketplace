@@ -28,3 +28,26 @@ listed commit.
 | `skills/sdd-run/SKILL.md` | [github/spec-kit](https://github.com/github/spec-kit) `templates/commands/clarify.md` (question loop) | `27d14e20c187c1f2916540ea201ecbdc9f8ed588` | MIT, Copyright GitHub, Inc. |
 | `skills/workflow-retro/SKILL.md` | [mattpocock/skills](https://github.com/mattpocock/skills) `skills/engineering/retro/SKILL.md` | `5beb35b040e3de97e54fa9e386d7e42d15c295c2` | MIT, Copyright (c) 2026 Matt Pocock |
 | `skills/workflow-retro/SKILL.md` | [bmad-code-org/BMAD-METHOD](https://github.com/bmad-code-org/BMAD-METHOD) `skills/bmad-retrospective/workflow.md`, `skills/bmad-retrospective/references/retro-document.md` | `61e01f82644c4bb533750cfa0d6d61ab61d2cc9b` | MIT, Copyright (c) 2025 BMad Code, LLC |
+
+## Trademarks
+
+"BMad" and "BMAD" are trademarks of BMad Code, LLC. This plugin is not affiliated with
+or endorsed by BMad Code, LLC, and does not use those names for any component.
+
+## MIT License text (applies to the sources above)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this
+software and associated documentation files (the "Software"), to deal in the Software
+without restriction, including without limitation the rights to use, copy, modify,
+merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or
+substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
