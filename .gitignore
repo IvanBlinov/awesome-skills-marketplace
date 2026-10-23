@@ -8,3 +8,4 @@ site/public/content/
 site/public/llms.txt
 site/test-results/
 site/playwright-report/
+site/.vite/
