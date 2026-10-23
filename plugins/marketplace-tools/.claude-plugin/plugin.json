@@ -1,6 +1,6 @@
 {
   "name": "marketplace-tools",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Find skills, agents and plugins in awesome-skills-marketplace from inside Claude Code",
   "author": {
     "name": "Ivan Blinov",

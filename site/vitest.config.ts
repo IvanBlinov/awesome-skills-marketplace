@@ -11,7 +11,7 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       include: ["src/**", "indexer/**"],
-      exclude: ["src/main.tsx", "indexer/cli.ts", "**/*.test.*", "src/test/**", "indexer/__fixtures__/**"],
+      exclude: ["src/main.tsx", "indexer/cli.ts", "indexer/bump-check-cli.ts", "**/*.test.*", "src/test/**", "indexer/__fixtures__/**"],
       thresholds: { lines: 80, functions: 80, statements: 80, branches: 80 },
     },
   },

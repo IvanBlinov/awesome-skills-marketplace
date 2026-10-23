@@ -55,6 +55,11 @@ jobs:
       - run: npm ci
       - name: Check content conventions
         run: npm run index:check
+      - name: Check plugin version bumps and changelogs
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_REF: origin/${{ github.base_ref }}
+        run: npm run release:check
       - run: npm run typecheck
       - name: Unit tests with coverage
         run: npm test

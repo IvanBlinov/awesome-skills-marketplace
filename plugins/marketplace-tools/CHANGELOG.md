@@ -6,6 +6,12 @@ All notable changes to `marketplace-tools` are documented here. The format follo
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-10-22
+
+### Added
+
+- `CHANGELOG.md` (required for every plugin from now on).
+
 ## [0.1.0] - 2026-10-21
 
 ### Added

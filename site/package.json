@@ -10,7 +10,8 @@
     "preview": "vite preview --port 4173",
     "typecheck": "tsc -p .",
     "test": "vitest run --coverage",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "release:check": "tsx indexer/bump-check-cli.ts"
   },
   "dependencies": {
     "minisearch": "^7.2.0",
